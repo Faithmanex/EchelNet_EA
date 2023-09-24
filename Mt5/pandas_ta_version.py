@@ -11,7 +11,6 @@ import pandas as pd
 # Initialize MetaTrader
 mt5.initialize()
 
-# Select a symbol
 
 
 # Define variables
@@ -19,6 +18,7 @@ period = 14
 fast_ma_period = 14
 slow_ma_period = 28
 
+# Select a symbol
 symbol = "Step Index"
 
 def play_error_sound():

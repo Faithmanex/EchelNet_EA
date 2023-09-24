@@ -9,7 +9,7 @@ import pytz
 mt5.initialize()
 
 # Step 2: Subscribe to tick data
-symbol = "Volatility 50 Index"
+symbol = "Step Index"
 mt5.symbol_select(symbol, True)
 
 # Step 3: Calculate and print EMA on every tick
@@ -80,7 +80,7 @@ while mt5.positions_total:
     # Print EMA, SMA, and price
     # print(f'EMA: {ema_value}\tSMA: {sma_value}\tPrice: {ticks.bid}, {ticks.ask}\tClose Price: {close_price}')
     # print()
-    sleep(0.1)
+    sleep(1)
                 # positions = mt5.positions_get(symbol=symbol)
                 # if positions is not None and len(positions) > 0:
                 #     for position in positions:
@@ -90,47 +90,53 @@ while mt5.positions_total:
         if ema_value < sma_value:
             if close_price < ema_value:
                 if mt5.ORDER_TYPE_SELL:
-                    # subprocess.Popen(["python", "close_positions.py"])
+                    subprocess.Popen(["python", "close_positions.py"])
                     lot_size = 0.2
-                    # stop_loss = 50
-                    # take_profit = 50
+                    stop_loss = 1
+                    take_profit = 1
                     request = {
                         "action": mt5.TRADE_ACTION_DEAL,
                         "symbol": symbol,
                         "volume": lot_size,
                         "type": mt5.ORDER_TYPE_SELL,
-                        "price": mt5.symbol_info_tick(symbol).ask,
-                        # "sl": mt5.symbol_info_tick(symbol).ask - stop_loss * mt5.symbol_info(symbol).point,
-                        # "tp": mt5.symbol_info_tick(symbol).ask + take_profit * mt5.symbol_info(symbol).point,
+                        "price": mt5.symbol_info_tick(symbol).bid,
+                        "sl": mt5.symbol_info_tick(symbol).bid + stop_loss,  # Set stop loss level
+                        "tp": mt5.symbol_info_tick(symbol).bid - take_profit,  # Set take profit level
+                        "type_filling": mt5.ORDER_FILLING_FOK,
                         "magic": 123456,
-                        "comment": "Buy"
+                        "comment": "Sell"
                     }
+
+
                     result = mt5.order_send(request)
                     if result.retcode != mt5.TRADE_RETCODE_DONE:
-                        print("Failed to open buy position:", result.comment)
+                        print("Failed to open Sell position:", result.comment)
 
     elif ema_value > sma_value:
         if close_price < ema_value:
             if close_price < sma_value:
                 if mt5.ORDER_TYPE_BUY:
-                    # subprocess.Popen(["python", "close_positions.py"])
+                    subprocess.Popen(["python", "close_positions.py"])
                     lot_size = 0.2
-                    # stop_loss = 50
-                    # take_profit = 50
+                    stop_loss = 1
+                    take_profit = 1
                     request = {
                         "action": mt5.TRADE_ACTION_DEAL,
                         "symbol": symbol,
                         "volume": lot_size,
                         "type": mt5.ORDER_TYPE_BUY,
-                        "price": mt5.symbol_info_tick(symbol).bid,
-                        # "sl": mt5.symbol_info_tick(symbol).bid + stop_loss * mt5.symbol_info(symbol).point,
-                        # "tp": mt5.symbol_info_tick(symbol).bid - take_profit * mt5.symbol_info(symbol).point,
+                        "price": mt5.symbol_info_tick(symbol).ask,
+                        "sl": mt5.symbol_info_tick(symbol).ask - stop_loss,  # Set stop loss level
+                        "tp": mt5.symbol_info_tick(symbol).ask + take_profit,  # Set take profit level
+                        "type_filling": mt5.ORDER_FILLING_FOK,
                         "magic": 123456,
-                        "comment": "Sell"
+                        "comment": "Buy"
                     }
+
+
                     result = mt5.order_send(request)
                     if result.retcode != mt5.TRADE_RETCODE_DONE:
-                        print("Failed to open sell position:", result.comment)
+                        print("Failed to open Buy position:", result.comment)
 
                 
 

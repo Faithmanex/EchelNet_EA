@@ -9,7 +9,7 @@ if not mt5.initialize():
     quit()
 
 # request initial bars of EURUSD H1
-rates = mt5.copy_rates_from_pos("EURUSD", mt5.TIMEFRAME_H1, 0, 1000)
+rates = mt5.copy_rates_from_pos("Step Index", mt5.TIMEFRAME_H1, 0, 1000)
 
 # create DataFrame out of the obtained data
 rates_frame = pd.DataFrame(rates)

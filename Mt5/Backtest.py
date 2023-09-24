@@ -9,10 +9,10 @@ if not mt5.initialize():
     quit()
 
 # Define the asset symbol
-symbol = 'XAUUSD'
+symbol = 'Step Index'
 
 # Get the last 100 bars of daily data for the asset
-bars = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M1, 0, 999)
+bars = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M3, 0, 99999)
 
 # Check if bars is None
 if bars is None:
