@@ -7,10 +7,18 @@ import pytz
 
 # Step 1: Connect to the MetaTrader terminal
 mt5.initialize()
+if not mt5.initialize():
+    print("initialize() failed, error code =",mt5.last_error())
+    quit()
 
 # Step 2: Subscribe to tick data
 symbol = "Step Index"
 mt5.symbol_select(symbol, True)
+
+if not mt5.symbol_select(symbol, True):
+    print("Failed to select symbol ", symbol)
+    mt5.shutdown()
+    quit()
 
 # Step 3: Calculate and print EMA on every tick
 ema_period = 20
@@ -75,25 +83,26 @@ while mt5.positions_total:
             
             # Print the DataFrame
             print(df)
-            print()
+            # print()
 
     # Print EMA, SMA, and price
     # print(f'EMA: {ema_value}\tSMA: {sma_value}\tPrice: {ticks.bid}, {ticks.ask}\tClose Price: {close_price}')
     # print()
-    sleep(1)
+    sleep(0)
                 # positions = mt5.positions_get(symbol=symbol)
                 # if positions is not None and len(positions) > 0:
                 #     for position in positions:
                 #         if position.type == mt5.ORDER_TYPE_SELL:
     # Trading logic
     if mt5.positions_total() < 3:
-        if ema_value < sma_value:
-            if close_price < ema_value:
+        if ema_value > sma_value: # and close_price < ema_value:
+            if close_price < ema_value and close_price < sma_value:
+                
                 if mt5.ORDER_TYPE_SELL:
-                    subprocess.Popen(["python", "close_positions.py"])
+                    # subprocess.Popen(["python", "close_positions.py"])
                     lot_size = 0.2
-                    stop_loss = 1
                     take_profit = 1
+                    stop_loss = take_profit * 2
                     request = {
                         "action": mt5.TRADE_ACTION_DEAL,
                         "symbol": symbol,
@@ -112,34 +121,33 @@ while mt5.positions_total:
                     if result.retcode != mt5.TRADE_RETCODE_DONE:
                         print("Failed to open Sell position:", result.comment)
 
-    elif ema_value > sma_value:
-        if close_price < ema_value:
-            if close_price < sma_value:
-                if mt5.ORDER_TYPE_BUY:
-                    subprocess.Popen(["python", "close_positions.py"])
-                    lot_size = 0.2
-                    stop_loss = 1
-                    take_profit = 1
-                    request = {
-                        "action": mt5.TRADE_ACTION_DEAL,
-                        "symbol": symbol,
-                        "volume": lot_size,
-                        "type": mt5.ORDER_TYPE_BUY,
-                        "price": mt5.symbol_info_tick(symbol).ask,
-                        "sl": mt5.symbol_info_tick(symbol).ask - stop_loss,  # Set stop loss level
-                        "tp": mt5.symbol_info_tick(symbol).ask + take_profit,  # Set take profit level
-                        "type_filling": mt5.ORDER_FILLING_FOK,
-                        "magic": 123456,
-                        "comment": "Buy"
-                    }
+    if ema_value < sma_value:
+        if close_price > ema_value and close_price > sma_value:
+            if mt5.ORDER_TYPE_BUY:
+                # subprocess.Popen(["python", "close_positions.py"])
+                lot_size = 0.2
+                take_profit = 1
+                stop_loss = take_profit * 2
+                request = {
+                    "action": mt5.TRADE_ACTION_DEAL,
+                    "symbol": symbol,
+                    "volume": lot_size,
+                    "type": mt5.ORDER_TYPE_BUY,
+                    "price": mt5.symbol_info_tick(symbol).ask,
+                    "sl": mt5.symbol_info_tick(symbol).ask - stop_loss,  # Set stop loss level
+                    "tp": mt5.symbol_info_tick(symbol).ask + take_profit,  # Set take profit level
+                    "type_filling": mt5.ORDER_FILLING_FOK,
+                    "magic": 123456,
+                    "comment": "Buy"
+                }
 
 
-                    result = mt5.order_send(request)
-                    if result.retcode != mt5.TRADE_RETCODE_DONE:
-                        print("Failed to open Buy position:", result.comment)
+                result = mt5.order_send(request)
+                if result.retcode != mt5.TRADE_RETCODE_DONE:
+                    print("Failed to open Buy position:", result.comment)
 
                 
 
 
 # Step 4: Disconnect from the MetaTrader terminal
-# mt5.shutdown()
+mt5.shutdown()

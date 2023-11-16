@@ -26,6 +26,7 @@ elif len(positions) > 0:
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_FOK,
         }
+        print("Position Closed")
         result = mt5.order_send(trade_request)
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             print("Order failed, retcode={}".format(result.retcode))
