@@ -32,7 +32,7 @@ if not symbol_info.visible:
         print("symbol_select({}) failed, exit".format(symbol))
         mt5.shutdown()
         quit()
-news_time = "13:35:00"
+news_time = "18:59:58"
 lot = 0.5
 stop_loss = 35
 take_profit = 150

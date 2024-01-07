@@ -25,14 +25,14 @@ mt5.initialize()
 
 # CONFIGS
 
-MAX_DIST_SL = 5  # Max distance between current price and SL, otherwise SL will update
-TRAIL_AMOUNT = 2.5  # Amount by how much SL updates
+MAX_DIST_SL = 1  # Max distance between current price and SL, otherwise SL will update
+TRAIL_AMOUNT = 0.5  # Amount by how much SL updates
 DEFAULT_SL = 0 # If position has no SL, set a default SL
 
 
 # function to trail SL
 # Add a list of symbols to which you want to apply the trailing stop loss
-SYMBOLS = ['Step Index']
+SYMBOLS = ['Step Index','Boom 300 Index']
 
 def trail_sl():
   # get all open positions
