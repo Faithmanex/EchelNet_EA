@@ -25,14 +25,14 @@ mt5.initialize()
 
 # CONFIGS
 
-MAX_DIST_SL = 1  # Max distance between current price and SL, otherwise SL will update
+MAX_DIST_SL = 0  # Max distance between current price and SL, otherwise SL will update
 TRAIL_AMOUNT = 0.5  # Amount by how much SL updates
 DEFAULT_SL = 0 # If position has no SL, set a default SL
 
 
 # function to trail SL
 # Add a list of symbols to which you want to apply the trailing stop loss
-SYMBOLS = ['Step Index','Boom 300 Index']
+SYMBOLS = ['Step Index']
 
 def trail_sl():
   # get all open positions
@@ -48,6 +48,7 @@ def trail_sl():
               price_current = position.price_current
               price_open = position.price_open
               sl = position.sl
+              trail = price_open
 
               dist_from_sl = abs(round(price_current - sl, 6))
 
@@ -55,10 +56,16 @@ def trail_sl():
                  # calculating new sl
                  if sl != 0.0:
                     if order_type == 0: # 0 stands for BUY
-                        new_sl = sl + TRAIL_AMOUNT
+                        new_sl = trail + TRAIL_AMOUNT
+                        if sl > price_open:
+                            trail = sl
+                            new_sl = trail + TRAIL_AMOUNT
 
                     elif order_type == 1: # 1 stands for SELL
-                        new_sl = sl - TRAIL_AMOUNT
+                        new_sl = trail - TRAIL_AMOUNT
+                        if sl < price_open:
+                            trail = sl
+                            new_sl = trail - TRAIL_AMOUNT
 
                  else:
                     # setting default SL if the is no SL on the symbol
@@ -68,11 +75,13 @@ def trail_sl():
                     'action': mt5.TRADE_ACTION_SLTP,
                     'position': position.ticket,
                     'sl': new_sl,
+                    'comment': "EchelNet",
                  }
 
                  result = mt5.order_send(request)
                  print(result)
                  return result
+             
   else:
       print('No open positions')
 

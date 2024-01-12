@@ -32,7 +32,7 @@ if not symbol_info.visible:
         print("symbol_select({}) failed, exit".format(symbol))
         mt5.shutdown()
         quit()
-news_time = "18:59:58"
+news_time = "11:00:00"
 lot = 0.5
 stop_loss = 35
 take_profit = 150
@@ -50,7 +50,7 @@ request = {
     # "tp": price + take_profit * point,
     "deviation": deviation,
     "magic": 234000,
-    "comment": "EchelNet Sniper",
+    "comment": "EchelNet News EA",
     "type_time": mt5.ORDER_TIME_GTC,
     "type_filling": mt5.ORDER_FILLING_RETURN,
 }
