@@ -18,7 +18,7 @@ if not mt5.initialize():
     quit()
 
 # prepare the buy request structure
-symbol = "Step Index"
+symbol = "USDJPY"
 symbol_info = mt5.symbol_info(symbol)
 if symbol_info is None:
     print(symbol, "not found, can not call order_check()")
@@ -32,7 +32,7 @@ if not symbol_info.visible:
         print("symbol_select({}) failed, exit".format(symbol))
         mt5.shutdown()
         quit()
-news_time = "11:00:00"
+news_time = "00:49:58"
 lot = 0.5
 stop_loss = 35
 take_profit = 150
@@ -91,7 +91,7 @@ while True:
         break
    
     # wait for a second before checking again
-    time.sleep(1)
+    time.sleep(0.1)
 
 mt5.shutdown()
 quit()
