@@ -10,8 +10,9 @@ class TradingApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Trading Application")
+        self.title("EchelNet News Algo")
         self.geometry("600x400")
+        ctk.set_appearance_mode("dark")
 
         # Labels
         self.symbol_label = ctk.CTkLabel(self, text="Symbol:")
@@ -57,7 +58,7 @@ class TradingApp(ctk.CTk):
         self.news_time_second.grid(row=5, column=3, pady=10, padx=10, sticky="ew")
 
         # Button
-        self.start_button = ctk.CTkButton(self, text="Start Trading", command=self.start_trading)
+        self.start_button = ctk.CTkButton(self, text="Start Trading", command=self.start_trading, fg_color="green")
         self.start_button.grid(row=6, column=0, columnspan=4, pady=10, padx=5)
 
         # Output Text Box

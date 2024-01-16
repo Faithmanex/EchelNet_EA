@@ -1,20 +1,3 @@
-"""
-Trailing Stoploss
-Author: TraderPy
-
-Youtube: https://www.youtube.com/channel/UC9xYCyyR_G3LIuJ_LlTiEVQ/featured
-
-Website: https://traderpy.com/
-
-Disclaimer
-Trading the financial markets imposes a risk of financial loss. TraderPy is not responsible for any financial losses
-that viewers suffer. Content is educational only and does not serve as financial advice. Information or material is
-provided ‘as is’ without any warranty.
-
-Past trading results do not indicate future performance. Strategies that worked in the past may not reflect the same
-results in the future.
-"""
-
 # import libraries
 import MetaTrader5 as mt5
 import time
@@ -25,14 +8,15 @@ mt5.initialize()
 
 # CONFIGS
 
-MAX_DIST_SL = 0  # Max distance between current price and SL, otherwise SL will update
-TRAIL_AMOUNT = 0.5  # Amount by how much SL updates
-DEFAULT_SL = 0 # If position has no SL, set a default SL
+MAX_DIST_SL = 0.0002  # Max distance between current price and SL, otherwise SL will update
+TRAIL_AMOUNT = 0.0001  # Amount by how much SL updates
+DEFAULT_SL = 0.0002 # If position has no SL, set a default SL
 
 
 # function to trail SL
 # Add a list of symbols to which you want to apply the trailing stop loss
-SYMBOLS = ['Step Index']
+SYMBOLS = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "USDCAD", "AUDUSD", "NZDUSD", "EURGBP", "EURJPY", "GBPJPY", "AUDJPY", "NZDJPY", "AUDNZD"
+]
 
 def trail_sl():
   # get all open positions
@@ -49,6 +33,7 @@ def trail_sl():
               price_open = position.price_open
               sl = position.sl
               trail = price_open
+              
 
               dist_from_sl = abs(round(price_current - sl, 6))
 
@@ -96,7 +81,7 @@ if __name__ == '__main__':
     while True:
         result = trail_sl()
         # wait 1 second
-        time.sleep(1)
+        time.sleep(0.1)
 
 
 
