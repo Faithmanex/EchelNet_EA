@@ -14,26 +14,26 @@ class TradingBot:
     def __init__(self, tkInstance) -> None:
         self.tk = tkInstance
 
-    def execute_trades(self, symbol, lot, stop_loss, take_profit, stop_distance, news_time):
+    def execute_trades(self, symbol, lot, stop_loss, take_profit, stop_distance, news_time) -> str:
         # create a timezone object for WAT
         wat = pytz.timezone('Africa/Lagos')
 
         # establish connection to the MetaTrader 5 terminal
         if not mt5.initialize():
-            self.tk.output_text_box.insert(self.tk.END, "initialize() failed, error code = {}\n".format(mt5.last_error()))
+            error = "initialise error"
             return
 
         # prepare the buy request structure
         symbol_info = mt5.symbol_info(symbol)
         if symbol_info is None:
-            self.tk.output_text_box.insert(self.tk.END, "{} not found, can not call order_check()\n".format(symbol))
+            error = "symbol not found"
             mt5.shutdown()
             return
 
         if not symbol_info.visible:
-            self.tk.output_text_box.insert(self.tk.END, "{} is not visible, trying to switch on\n".format(symbol))
+            error = "symbol not visible"
             if not mt5.symbol_select(symbol, True):
-                self.tk.output_text_box.insert(self.tk.END, "symbol_select({}) failed, exit\n".format(symbol))
+                error = "symbol not selected"
                 mt5.shutdown()
                 return
 
@@ -73,20 +73,18 @@ class TradingBot:
         while True:
             now_wat = datetime.datetime.now(wat)
             formatted_time = now_wat.strftime("%H:%M:%S")
-            self.tk.output_text_box.insert(self.tk.END, "{}\n".format(formatted_time))
+            # self.tk.output_text_box.insert(self.tk.END, "{}\n".format(formatted_time))
 
             if formatted_time == news_time:
                 result = mt5.order_send(request)
                 result1 = mt5.order_send(request1)
-                self.tk.output_text_box.insert(self.tk.END, "1. order_send(): by {} {} lots at {} with deviation={} points\n".format(symbol, lot, price, deviation))
+                error = "order sent"
                 if result.retcode != mt5.TRADE_RETCODE_DONE or result1.retcode != mt5.TRADE_RETCODE_DONE:
-                    self.tk.output_text_box.insert(self.tk.END, "2. order_send failed, retcode={} ({}), retcode1={} ({})\n".format(
-                        result.retcode, mt5.last_error(), result1.retcode, mt5.last_error()
-                    ))
+                    error = 'order sent error'
                 break
 
             time.sleep(0.1)
 
         mt5.shutdown()
 
-        pass
+        return error, price, deviation, result, result1
