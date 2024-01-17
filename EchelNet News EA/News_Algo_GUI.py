@@ -74,8 +74,8 @@ class TradingApp(ctk.CTk):
         self.current_time_label.grid(row=6, column=2, columnspan=4, pady=10, padx=5)
 
     def start_trading(self):
-        symbol = self.symbol_entry.get()
-        lot = float(self.lot_entry.get())
+        self.symbol = self.symbol_entry.get()
+        self.lot = float(self.lot_entry.get())
         stop_loss = float(self.stop_loss_entry.get())
         take_profit = float(self.take_profit_entry.get())
         stop_distance = float(self.stop_distance_entry.get())
@@ -84,10 +84,29 @@ class TradingApp(ctk.CTk):
         news_time_second = self.news_time_second.get()
         news_time = f"{news_time_hour}:{news_time_minute}:{news_time_second}"
 
-        self.output_text_box.insert(tk.END, f"Starting Trading Bot for symbol: {symbol}\n")
-        self.tradingBot.execute_trades(symbol, lot, stop_loss, take_profit, stop_distance, news_time)
+        self.output_text_box.insert(tk.END, f"Starting Trading Bot for symbol: {self.symbol}\n")
+        error, price, deviation, result, result1 = self.tradingBot.execute_trades(self.symbol, self.lot, stop_loss, take_profit, stop_distance, news_time)
 
-  
+        # handle the responses from the trading bot
+        self.handle_error(error, price, deviation, result, result1)
+
+    def handle_error(self, errorCode,price, deviation, result, result1):
+        if errorCode == "initialise error":
+            self.output_text_box.insert(tk.END, "initialize() failed, error code = {}\n".format(mt5.last_error()))
+        elif errorCode == "symbol not found":
+            self.output_text_box.insert(tk.END, "{} not found, can not call order_check()\n".format(self.symbol))
+        elif errorCode == "symbol not visible":
+            self.output_text_box.insert(tk.END, "{} is not visible, trying to switch on\n".format(self.symbol))
+        elif errorCode == "symbol not selected":
+            self.output_text_box.insert(tk.END, "symbol_select({}) failed, exit\n".format(self.symbol))
+        elif errorCode == "order sent":
+            self.output_text_box.insert(tk.END, "1. order_send(): by {} {} lots at {} with deviation={} points\n".format(self.symbol, self.lot, price, deviation))
+        elif errorCode == "order sent error":
+            self.output_text_box.insert(tk.END, "2. order_send failed, retcode={} ({}), retcode1={} ({})\n".format(
+                        result.retcode, mt5.last_error(), result1.retcode, mt5.last_error()
+                    ))
+
+
     def start_trading_thread(self):
         # Create a new thread and run self.start_trading in that thread
         trading_thread = threading.Thread(target=self.start_trading)
