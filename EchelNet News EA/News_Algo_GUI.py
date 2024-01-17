@@ -5,6 +5,7 @@ import pytz
 import time
 import MetaTrader5 as mt5
 from tkinter import messagebox
+import threading
 
 class TradingApp(ctk.CTk):
     def __init__(self):
@@ -58,7 +59,7 @@ class TradingApp(ctk.CTk):
         self.news_time_second.grid(row=5, column=3, pady=10, padx=10, sticky="ew")
 
         # Button
-        self.start_button = ctk.CTkButton(self, text="Start Trading", command=self.start_trading, fg_color="green")
+        self.start_button = ctk.CTkButton(self, text="Start Trading", command=self.start_trading_thread, fg_color="green")
         self.start_button.grid(row=6, column=0, columnspan=4, pady=10, padx=5)
 
         # Output Text Box
@@ -82,6 +83,11 @@ class TradingApp(ctk.CTk):
 
         self.output_text_box.insert(tk.END, f"Starting Trading Bot for symbol: {symbol}\n")
         self.execute_trades(symbol, lot, stop_loss, take_profit, stop_distance, news_time)
+
+    def start_trading_thread(self):
+        # Create a new thread and run self.start_trading in that thread
+        trading_thread = threading.Thread(target=self.start_trading)
+        trading_thread.start()
 
     def execute_trades(self, symbol, lot, stop_loss, take_profit, stop_distance, news_time):
         # create a timezone object for WAT
