@@ -15,7 +15,7 @@ class TradingApp(ctk.CTk):
         self.tradingBot = TradingBot(self)
 
         self.title("EchelNet News Algo")
-        self.geometry("600x400")
+        self.geometry("550x500")
         ctk.set_appearance_mode("dark")
 
         # Labels
@@ -66,7 +66,7 @@ class TradingApp(ctk.CTk):
         self.start_button.grid(row=6, column=0, columnspan=4, pady=10, padx=5)
 
         # Output Text Box
-        self.output_text_box = ctk.CTkTextbox(self, height=10, width=200)
+        self.output_text_box = ctk.CTkTextbox(self, height=150, width=300)
         self.output_text_box.grid(row=7, column=0, columnspan=4, pady=5, padx=10)
 
         # Current Time Display
@@ -84,7 +84,7 @@ class TradingApp(ctk.CTk):
         news_time_second = self.news_time_second.get()
         news_time = f"{news_time_hour}:{news_time_minute}:{news_time_second}"
 
-        self.output_text_box.insert(tk.END, f"Starting Trading Bot for symbol: {self.symbol}\n")
+        self.output_text_box.insert(tk.END, f"Sending order for symbol: {self.symbol}\nTime: {news_time}\nLot Size: {self.lot}\nStop Loss: {stop_loss} points")
         error, price, deviation, result, result1 = self.tradingBot.execute_trades(self.symbol, self.lot, stop_loss, take_profit, stop_distance, news_time)
 
         # handle the responses from the trading bot
