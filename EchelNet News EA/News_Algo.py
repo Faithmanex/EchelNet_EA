@@ -40,8 +40,8 @@ class TradingBot:
         point = symbol_info.point
         price = mt5.symbol_info_tick(symbol).ask
         deviation = 20
-        result = None
-        result1 = None
+        result = ''
+        result1 = ''
 
         request = {
             "action": mt5.TRADE_ACTION_PENDING,
