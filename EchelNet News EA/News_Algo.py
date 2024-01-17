@@ -21,21 +21,21 @@ class TradingBot:
         # establish connection to the MetaTrader 5 terminal
         if not mt5.initialize():
             error = "initialise error"
-            return
+            return error, None, None, None, None
 
         # prepare the buy request structure
         symbol_info = mt5.symbol_info(symbol)
         if symbol_info is None:
             error = "symbol not found"
             mt5.shutdown()
-            return
+            return error, None, None, None, None
 
         if not symbol_info.visible:
             error = "symbol not visible"
             if not mt5.symbol_select(symbol, True):
                 error = "symbol not selected"
                 mt5.shutdown()
-                return
+                return error, None, None, None, None
 
         point = symbol_info.point
         price = mt5.symbol_info_tick(symbol).ask
