@@ -28,11 +28,11 @@ mt5.initialize()
 MAX_DIST_SL = 0  # Max distance between current price and SL, otherwise SL will update
 TRAIL_AMOUNT = 0.5  # Amount by how much SL updates
 DEFAULT_SL = 0 # If position has no SL, set a default SL
-
+take_profit = 100
 
 # function to trail SL
 # Add a list of symbols to which you want to apply the trailing stop loss
-SYMBOLS = ['Step Index']
+SYMBOLS = ['Range Break 100 Index']
 
 def trail_sl():
   # get all open positions
@@ -75,6 +75,8 @@ def trail_sl():
                     'action': mt5.TRADE_ACTION_SLTP,
                     'position': position.ticket,
                     'sl': new_sl,
+                    "tp": mt5.symbol_info_tick(SYMBOLS[0]).ask + take_profit,
+                    #TODO: Add take profit
                     'comment': "EchelNet",
                  }
 

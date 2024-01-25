@@ -15,7 +15,7 @@ class TradingApp(ctk.CTk):
         self.tradingBot = TradingBot(self)
 
         self.title("EchelNet News Algo")
-        self.geometry("550x500")
+        self.geometry("550x600")
         ctk.set_appearance_mode("dark")
 
         # Labels
@@ -65,13 +65,58 @@ class TradingApp(ctk.CTk):
         self.start_button = ctk.CTkButton(self, text="Start Trading", command=self.start_trading_thread, fg_color="green")
         self.start_button.grid(row=6, column=0, columnspan=4, pady=10, padx=5)
 
-        # Output Text Box
-        self.output_text_box = ctk.CTkTextbox(self, height=150, width=300)
-        self.output_text_box.grid(row=7, column=0, columnspan=4, pady=5, padx=10)
+        self.cancel_button = ctk.CTkButton(self, text="Cancel All Pending Orders", command=self.cancel_all_pending_orders, fg_color="red")
+        self.cancel_button.grid(row=7, column=0, pady=10, padx=10)
+
+
+# Output Text Box
+        self.output_text_box = ctk.CTkTextbox(self, height=150, width=300, font=("Arial", 12))
+        self.output_text_box.grid(row=8, column=0, columnspan=4, pady=5, padx=10)
+        self.output_text_box.bind('<KeyRelease>', self.adjust_height)
 
         # Current Time Display
         self.current_time_label = ctk.CTkLabel(self, text="")
         self.current_time_label.grid(row=6, column=2, columnspan=4, pady=10, padx=5)
+
+
+    def cancel_all_pending_orders(self):
+        # Initialize the connection
+        if not mt5.initialize():
+            print("Failed to initialize, error code =", mt5.last_error())
+            return
+
+        # Get all orders
+        orders = mt5.orders_get()
+        
+        # Check if orders is None
+        if orders is None:
+            print("No orders found.")
+            return
+
+        # Filter out only the pending orders
+        # Assuming that a pending order is either a BUY_STOP or SELL_STOP order
+        pending_orders = [order for order in orders if order.type == mt5.ORDER_TYPE_BUY_STOP or order.type == mt5.ORDER_TYPE_SELL_STOP]
+        
+        # Cancel each pending order
+        for order in pending_orders:
+            trade_request = {
+                "action": mt5.TRADE_ACTION_REMOVE,
+                "order": order.ticket,
+            }
+            result = mt5.order_send(trade_request)
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                print("Order delete failed, retcode={}".format(result.retcode))
+            else:
+                print("Pending order deleted")
+                return
+
+
+
+    def adjust_height(self, event):
+            text_content = event.widget.get('1.0', 'end')
+            lines = text_content.split('\n')
+            height = min(len(lines), 50) # Limit the maximum height to 50 lines
+            event.widget.config(height=height)
 
     def start_trading(self):
         self.symbol = self.symbol_entry.get()
@@ -84,7 +129,7 @@ class TradingApp(ctk.CTk):
         news_time_second = self.news_time_second.get()
         news_time = f"{news_time_hour}:{news_time_minute}:{news_time_second}"
 
-        self.output_text_box.insert(tk.END, f"Sending order for symbol: {self.symbol}\nTime: {news_time}\nLot Size: {self.lot}\nStop Loss: {stop_loss} points")
+        self.output_text_box.insert(tk.END, f"Sending order for symbol: {self.symbol}\nTime: {news_time}\nLot Size: {self.lot}\nStop Loss: {stop_loss} points\nTake Profit: {take_profit} points \nStop Distance: {stop_distance}\n\n")
         error, price, deviation, result, result1 = self.tradingBot.execute_trades(self.symbol, self.lot, stop_loss, take_profit, stop_distance, news_time)
 
         # handle the responses from the trading bot

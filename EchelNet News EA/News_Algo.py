@@ -9,6 +9,7 @@ import pytz
 import time
 import MetaTrader5 as mt5
 import threading
+import subprocess
 
 class TradingBot:
     def __init__(self, tkInstance) -> None:
@@ -38,8 +39,12 @@ class TradingBot:
                 return error, None, None, None, None
 
         point = symbol_info.point
-        price = mt5.symbol_info_tick(symbol).ask
+        ask_price = mt5.symbol_info_tick(symbol).ask
+        bid_price = mt5.symbol_info_tick(symbol).bid
         deviation = 20
+        BUY_MAGIC = 123456
+        SELL_MAGIC = 654321
+
         result = ''
         result1 = ''
 
@@ -48,10 +53,10 @@ class TradingBot:
             "symbol": symbol,
             "volume": lot,
             "type": mt5.ORDER_TYPE_BUY_STOP,
-            "price": price + stop_distance * point,
-            "sl": price - stop_loss * point,
+            "price": ask_price + stop_distance * point,
+            "sl": ask_price - stop_loss * point,
             "deviation": deviation,
-            "magic": 234000,
+            "magic": BUY_MAGIC,
             "comment": "EchelNet News EA",
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_RETURN,
@@ -62,31 +67,63 @@ class TradingBot:
             "symbol": symbol,
             "volume": lot,
             "type": mt5.ORDER_TYPE_SELL_STOP,
-            "price": price - stop_distance * point,
-            "sl": price + stop_loss * point,
+            "price": bid_price - stop_distance * point,
+            "sl": bid_price + stop_loss * point,
             "deviation": deviation,
-            "magic": 235000,
-            "comment": "EchelNet Sniper",
+            "magic": SELL_MAGIC,
+            "comment": "EchelNet News EA",
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_RETURN,
         }
 
+        
         # start the time loop
         while True:
             now_wat = datetime.datetime.now(wat)
             formatted_time = now_wat.strftime("%H:%M:%S")
+            print("Current time:", formatted_time)
             # self.tk.output_text_box.insert(self.tk.END, "{}\n".format(formatted_time))
-
+            
             if formatted_time == news_time:
+                print("Sending orders...")
                 result = mt5.order_send(request)
                 result1 = mt5.order_send(request1)
                 error = "order sent"
                 if result.retcode != mt5.TRADE_RETCODE_DONE or result1.retcode != mt5.TRADE_RETCODE_DONE:
                     error = 'order sent error'
+                orders = mt5.orders_get(symbol=symbol)
+                for order in orders:
+                    print(order.magic)
+                time.sleep(60)
+                     
+                # Get all orders
+                orders = mt5.orders_get()
+                
+                # Check if orders is None
+                if orders is None:
+                    print("No orders found.")
+                    return
+
+                # Filter out only the pending orders
+                # Assuming that a pending order is either a BUY_STOP or SELL_STOP order
+                pending_orders = [order for order in orders if order.type == mt5.ORDER_TYPE_BUY_STOP or order.type == mt5.ORDER_TYPE_SELL_STOP]
+                
+                # Cancel each pending order
+                for order in pending_orders:
+                    trade_request = {
+                        "action": mt5.TRADE_ACTION_REMOVE,
+                        "order": order.ticket,
+                    }
+                    result = mt5.order_send(trade_request)
+                    if result.retcode != mt5.TRADE_RETCODE_DONE:
+                        print("Order delete failed, retcode={}".format(result.retcode))
+                    else:
+                        print("Pending order deleted")
+                        return
                 break
 
-            time.sleep(0.1)
+            time.sleep(1)
 
         mt5.shutdown()
 
-        return error, price, deviation, result, result1
+        return error, ask_price, deviation, result, result1
