@@ -36,21 +36,24 @@ class TradingApp(ctk.CTk):
 
         self.news_time_label = ctk.CTkLabel(self, text="News Time (HH:MM:SS):")
         self.news_time_label.grid(row=5, column=0, pady=10, padx=10)
-
-        # Entries
-        self.symbol_entry = ctk.CTkEntry(self, placeholder_text="USDJPY", width=200)
+        self.symbol_entry = ctk.CTkEntry(self, placeholder_text="EURUSD", width=200)
+        self.symbol_entry.insert(0, "")
         self.symbol_entry.grid(row=0, column=1, pady=10, padx=10)
 
         self.lot_entry = ctk.CTkEntry(self, placeholder_text="0.5", width=200)
+        self.lot_entry.insert(0, "0.5")
         self.lot_entry.grid(row=1, column=1, pady=10, padx=10)
 
-        self.stop_loss_entry = ctk.CTkEntry(self, placeholder_text="35", width=200)
+        self.stop_loss_entry = ctk.CTkEntry(self, placeholder_text="30", width=200)
+        self.stop_loss_entry.insert(0, "30")
         self.stop_loss_entry.grid(row=2, column=1, pady=10, padx=10)
 
-        self.take_profit_entry = ctk.CTkEntry(self, placeholder_text="150", width=200)
+        self.take_profit_entry = ctk.CTkEntry(self, placeholder_text="Use 0 with Trailing Stop Loss", width=200)
+        self.take_profit_entry.insert(0, "0")
         self.take_profit_entry.grid(row=3, column=1, pady=10, padx=10)
 
-        self.stop_distance_entry = ctk.CTkEntry(self, placeholder_text="35", width=200)
+        self.stop_distance_entry = ctk.CTkEntry(self, placeholder_text="Distance from Price", width=200)
+        self.stop_distance_entry.insert(0, "30")
         self.stop_distance_entry.grid(row=4, column=1, pady=10, padx=10)
 
         # Time Picker
