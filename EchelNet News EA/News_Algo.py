@@ -1,7 +1,3 @@
-# This version places a buy stop and sell stop order
-# 1. Checks time in GMT, places the pending orders based on time input
-# 2. Loops and displays current time in GMT
-# 3. Created variables for some values
 # Note: Set the time to 2 seconds before News Event
 
 import datetime
@@ -15,8 +11,8 @@ class TradingBot:
     def __init__(self, tkInstance) -> None:
         self.tk = tkInstance
 
-    def execute_trades(self, symbol, lot, stop_loss, take_profit, stop_distance, news_time) -> str:
-        # create a timezone object for WAT
+    def execute_trades(self, symbol, lot, stop_loss, take_profit, stop_distance, timeout, news_time) -> str:
+    # existing method implementation        # create a timezone object for WAT
         wat = pytz.timezone('Africa/Lagos')
 
         # establish connection to the MetaTrader 5 terminal
@@ -44,6 +40,7 @@ class TradingBot:
         deviation = 20
         BUY_MAGIC = 123456
         SELL_MAGIC = 654321
+
 
         result = ''
         result1 = ''
@@ -85,45 +82,49 @@ class TradingBot:
             # self.tk.output_text_box.insert(self.tk.END, "{}\n".format(formatted_time))
             
             if formatted_time == news_time:
-                print("Sending orders...")
+                print("\nSending orders...\n")
                 result = mt5.order_send(request)
+                print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
                 result1 = mt5.order_send(request1)
+                print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
+
                 error = "order sent"
                 if result.retcode != mt5.TRADE_RETCODE_DONE or result1.retcode != mt5.TRADE_RETCODE_DONE:
                     error = 'order sent error'
                 orders = mt5.orders_get(symbol=symbol)
                 for order in orders:
                     print(order.magic)
-                time.sleep(60)
-                     
-                # Get all orders
-                orders = mt5.orders_get()
-                
-                # Check if orders is None
-                if orders is None:
-                    print("No orders found.")
-                    return
-
-                # Filter out only the pending orders
-                # Assuming that a pending order is either a BUY_STOP or SELL_STOP order
-                pending_orders = [order for order in orders if order.type == mt5.ORDER_TYPE_BUY_STOP or order.type == mt5.ORDER_TYPE_SELL_STOP]
-                
-                # Cancel each pending order
-                for order in pending_orders:
-                    trade_request = {
-                        "action": mt5.TRADE_ACTION_REMOVE,
-                        "order": order.ticket,
-                    }
-                    result = mt5.order_send(trade_request)
-                    if result.retcode != mt5.TRADE_RETCODE_DONE:
-                        print("Order delete failed, retcode={}".format(result.retcode))
-                    else:
-                        print("Pending order deleted")
+                    time.sleep(timeout)
+                        
+                    # Get all orders
+                    orders = mt5.orders_get()
+                    
+                    # Check if orders is None
+                    if orders is None:
+                        print("No orders found.")
                         return
-                break
 
-            time.sleep(1)
+                    # Filter out only the pending orders
+                    # Assuming that a pending order is either a BUY_STOP or SELL_STOP order
+                    pending_orders = [order for order in orders if order.type == mt5.ORDER_TYPE_BUY_STOP or order.type == mt5.ORDER_TYPE_SELL_STOP]
+                    
+                    # Timeout to Cancel each pending order
+                    for order in pending_orders:
+                        trade_request = {
+                            "action": mt5.TRADE_ACTION_REMOVE,
+                            "order": order.ticket,
+                        }
+                        result = mt5.order_send(trade_request)
+                        if result.retcode != mt5.TRADE_RETCODE_DONE:
+                            print("Order delete failed, retcode={}".format(result.retcode))
+                        else:
+                            print("Pending order deleted")
+                            return
+
+
+            time.sleep(0.0)
 
         mt5.shutdown()
 
         return error, ask_price, deviation, result, result1
+        

@@ -18,7 +18,19 @@ class TradingApp(ctk.CTk):
         self.geometry("550x600")
         ctk.set_appearance_mode("dark")
 
-        # Labels
+        # Initialize the connection
+        if not mt5.initialize():
+            print("Failed to initialize, error code =", mt5.last_error())
+            return
+
+        # Get all symbols
+        symbols = mt5.symbols_get()
+        if symbols is None:
+            print("No symbols found.")
+            return
+         # Extract the names of the symbols
+        symbol_names = [symbol.name for symbol in symbols]
+        
         self.symbol_label = ctk.CTkLabel(self, text="Symbol:")
         self.symbol_label.grid(row=0, column=0, pady=10, padx=10)
 
@@ -27,19 +39,23 @@ class TradingApp(ctk.CTk):
 
         self.stop_loss_label = ctk.CTkLabel(self, text="Stop Loss:")
         self.stop_loss_label.grid(row=2, column=0, pady=10, padx=10)
-
+        
         self.take_profit_label = ctk.CTkLabel(self, text="Take Profit:")
         self.take_profit_label.grid(row=3, column=0, pady=10, padx=10)
 
         self.stop_distance_label = ctk.CTkLabel(self, text="Stop Distance:")
         self.stop_distance_label.grid(row=4, column=0, pady=10, padx=10)
+        
+        self.timeout_label = ctk.CTkLabel(self, text="Timeout:")
+        self.timeout_label.grid(row=5, column=0, pady=10, padx=10)
 
         self.news_time_label = ctk.CTkLabel(self, text="News Time (HH:MM:SS):")
-        self.news_time_label.grid(row=5, column=0, pady=10, padx=10)
-        self.symbol_entry = ctk.CTkEntry(self, placeholder_text="EURUSD", width=200)
-        self.symbol_entry.insert(0, "")
-        self.symbol_entry.grid(row=0, column=1, pady=10, padx=10)
+        self.news_time_label.grid(row=6, column=0, pady=10, padx=10)
 
+        self.symbol_menu = ctk.CTkComboBox(self, values=symbol_names, width=200)
+        self.symbol_menu.grid(row=0, column=1, pady=10, padx=10)
+        
+        
         self.lot_entry = ctk.CTkEntry(self, placeholder_text="0.5", width=200)
         self.lot_entry.insert(0, "0.5")
         self.lot_entry.grid(row=1, column=1, pady=10, padx=10)
@@ -55,31 +71,37 @@ class TradingApp(ctk.CTk):
         self.stop_distance_entry = ctk.CTkEntry(self, placeholder_text="Distance from Price", width=200)
         self.stop_distance_entry.insert(0, "30")
         self.stop_distance_entry.grid(row=4, column=1, pady=10, padx=10)
+        
+        # Timeout Entry
+        self.timeout_entry = ctk.CTkEntry(self, placeholder_text="Timeout", width=200)
+        self.timeout_entry.insert(0, "60")
+        self.timeout_entry.grid(row=5, column=1, pady=10, padx=10)
 
         # Time Picker
         self.news_time_hour = ctk.CTkComboBox(self, values=[f"{i:02d}" for i in range(24)], width=60)
-        self.news_time_hour.grid(row=5, column=1, pady=10, padx=10, sticky="ew")
+        self.news_time_hour.grid(row=6, column=1, pady=10, padx=10, sticky="ew")
         self.news_time_minute = ctk.CTkComboBox(self, values=[f"{i:02d}" for i in range(60)], width=60)
-        self.news_time_minute.grid(row=5, column=2, pady=10, padx=10, sticky="ew")
+        self.news_time_minute.grid(row=6, column=2, pady=10, padx=10, sticky="ew")
         self.news_time_second = ctk.CTkComboBox(self, values=[f"{i:02d}" for i in range(60)], width=60)
-        self.news_time_second.grid(row=5, column=3, pady=10, padx=10, sticky="ew")
+        self.news_time_second.grid(row=6, column=3, pady=10, padx=10, sticky="ew")
 
         # Button
         self.start_button = ctk.CTkButton(self, text="Start Trading", command=self.start_trading_thread, fg_color="green")
-        self.start_button.grid(row=6, column=0, columnspan=4, pady=10, padx=5)
+        self.start_button.grid(row=7, column=0, columnspan=4, pady=10, padx=5)
 
+        # Cancel All Pending Orders Button
         self.cancel_button = ctk.CTkButton(self, text="Cancel All Pending Orders", command=self.cancel_all_pending_orders, fg_color="red")
-        self.cancel_button.grid(row=7, column=0, pady=10, padx=10)
+        self.cancel_button.grid(row=8, column=0, pady=10, padx=10)
 
 
-# Output Text Box
+        # Output Text Box
         self.output_text_box = ctk.CTkTextbox(self, height=150, width=300, font=("Arial", 12))
-        self.output_text_box.grid(row=8, column=0, columnspan=4, pady=5, padx=10)
+        self.output_text_box.grid(row=9, column=0, columnspan=4, pady=5, padx=10)
         self.output_text_box.bind('<KeyRelease>', self.adjust_height)
 
         # Current Time Display
         self.current_time_label = ctk.CTkLabel(self, text="")
-        self.current_time_label.grid(row=6, column=2, columnspan=4, pady=10, padx=5)
+        self.current_time_label.grid(row=7, column=2, columnspan=4, pady=10, padx=5)
 
 
     def cancel_all_pending_orders(self):
@@ -122,18 +144,20 @@ class TradingApp(ctk.CTk):
             event.widget.config(height=height)
 
     def start_trading(self):
-        self.symbol = self.symbol_entry.get()
+        # self.symbol = self.symbol_entry.get()
+        self.symbol = self.symbol_menu.get()
         self.lot = float(self.lot_entry.get())
         stop_loss = float(self.stop_loss_entry.get())
         take_profit = float(self.take_profit_entry.get())
         stop_distance = float(self.stop_distance_entry.get())
+        timeout = float(self.timeout_entry.get())
         news_time_hour = self.news_time_hour.get()
         news_time_minute = self.news_time_minute.get()
         news_time_second = self.news_time_second.get()
         news_time = f"{news_time_hour}:{news_time_minute}:{news_time_second}"
 
-        self.output_text_box.insert(tk.END, f"Sending order for symbol: {self.symbol}\nTime: {news_time}\nLot Size: {self.lot}\nStop Loss: {stop_loss} points\nTake Profit: {take_profit} points \nStop Distance: {stop_distance}\n\n")
-        error, price, deviation, result, result1 = self.tradingBot.execute_trades(self.symbol, self.lot, stop_loss, take_profit, stop_distance, news_time)
+        self.output_text_box.insert(tk.END, f"Sending order for symbol: {self.symbol}\nTime: {news_time}\nLot Size: {self.lot}\nStop Loss: {stop_loss} points\nTake Profit: {take_profit} points \nStop Distance: {stop_distance}\nTimeout: {timeout}\n\n")
+        error, price, deviation, result, result1 = self.tradingBot.execute_trades(self.symbol, self.lot, stop_loss, take_profit, stop_distance, timeout, news_time)
 
         # handle the responses from the trading bot
         self.handle_error(error, price, deviation, result, result1)

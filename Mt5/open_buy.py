@@ -9,8 +9,8 @@ if not mt5.initialize():
 magic_number = 123456
 
 # Open a buy trade
-symbol = "EURUSDm"
-lot = 0.01
+symbol = "Step Index"
+lot = 0.1
 ask_price = mt5.symbol_info_tick(symbol).ask
 bid_price = mt5.symbol_info_tick(symbol).bid
 # sl = price - 100 * mt5.symbol_info(symbol).point
