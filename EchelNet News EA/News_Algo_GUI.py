@@ -31,67 +31,75 @@ class TradingApp(ctk.CTk):
          # Extract the names of the symbols
         symbol_names = [symbol.name for symbol in symbols]
         
-        self.symbol_label = ctk.CTkLabel(self, text="Symbol:")
-        self.symbol_label.grid(row=0, column=0, pady=10, padx=10)
-
-        self.lot_label = ctk.CTkLabel(self, text="Lot:")
-        self.lot_label.grid(row=1, column=0, pady=10, padx=10)
-
-        self.stop_loss_label = ctk.CTkLabel(self, text="Stop Loss:")
-        self.stop_loss_label.grid(row=2, column=0, pady=10, padx=10)
+        # Labels
         
-        self.take_profit_label = ctk.CTkLabel(self, text="Take Profit:")
-        self.take_profit_label.grid(row=3, column=0, pady=10, padx=10)
+        self.symbol_label = ctk.CTkLabel(self, text="Symbol:", anchor="w", justify="left")
+        self.symbol_label.grid(row=0, column=0, pady=5, padx=10, sticky="w")
 
-        self.stop_distance_label = ctk.CTkLabel(self, text="Stop Distance:")
-        self.stop_distance_label.grid(row=4, column=0, pady=10, padx=10)
-        
-        self.timeout_label = ctk.CTkLabel(self, text="Timeout:")
-        self.timeout_label.grid(row=5, column=0, pady=10, padx=10)
+        self.lot_label = ctk.CTkLabel(self, text="Lot:", anchor="w", justify="left")
+        self.lot_label.grid(row=1, column=0, pady=5, padx=10, sticky="w")
 
-        self.news_time_label = ctk.CTkLabel(self, text="News Time (HH:MM:SS):")
-        self.news_time_label.grid(row=6, column=0, pady=10, padx=10)
+        self.stop_loss_label = ctk.CTkLabel(self, text="Stop Loss:", anchor="w", justify="left")
+        self.stop_loss_label.grid(row=2, column=0, pady=5, padx=10, sticky="w")
 
-        self.symbol_menu = ctk.CTkComboBox(self, values=symbol_names, width=200)
-        self.symbol_menu.grid(row=0, column=1, pady=10, padx=10)
+        self.take_profit_label = ctk.CTkLabel(self, text="Take Profit:", anchor="w", justify="left")
+        self.take_profit_label.grid(row=3, column=0, pady=5, padx=10, sticky="w")
+
+        self.stop_distance_label = ctk.CTkLabel(self, text="Stop Distance:", anchor="w", justify="left")
+        self.stop_distance_label.grid(row=4, column=0, pady=5, padx=10, sticky="w")
+
+        self.timeout_label = ctk.CTkLabel(self, text="Timeout:", anchor="w", justify="left")
+        self.timeout_label.grid(row=5, column=0, pady=5, padx=10, sticky="w")
+
+        self.news_time_label = ctk.CTkLabel(self, text="News Time (HH:MM:SS):", anchor="w", justify="left")
+        self.news_time_label.grid(row=6, column=0, pady=5, padx=10, sticky="w")
+
+
+        # Entries
         
+        self.symbol_menu = ctk.CTkComboBox(self, values=symbol_names, width=150)
+        self.symbol_menu.grid(row=0, column=1, pady=5, padx=10)
         
-        self.lot_entry = ctk.CTkEntry(self, placeholder_text="0.5", width=200)
+        self.lot_entry = ctk.CTkEntry(self, placeholder_text="0.5", width=60)
         self.lot_entry.insert(0, "0.5")
-        self.lot_entry.grid(row=1, column=1, pady=10, padx=10)
+        self.lot_entry.grid(row=1, column=1, pady=5, padx=10, sticky="w")
 
-        self.stop_loss_entry = ctk.CTkEntry(self, placeholder_text="30", width=200)
+        self.stop_loss_entry = ctk.CTkEntry(self, placeholder_text="30", width=60)
         self.stop_loss_entry.insert(0, "30")
-        self.stop_loss_entry.grid(row=2, column=1, pady=10, padx=10)
+        self.stop_loss_entry.grid(row=2, column=1, pady=5, padx=10, sticky="w")
 
-        self.take_profit_entry = ctk.CTkEntry(self, placeholder_text="Use 0 with Trailing Stop Loss", width=200)
+        self.take_profit_entry = ctk.CTkEntry(self, placeholder_text="Use  0 with Trailing Stop Loss", width=60)
         self.take_profit_entry.insert(0, "0")
-        self.take_profit_entry.grid(row=3, column=1, pady=10, padx=10)
+        self.take_profit_entry.grid(row=3, column=1, pady=5, padx=10, sticky="w")
 
-        self.stop_distance_entry = ctk.CTkEntry(self, placeholder_text="Distance from Price", width=200)
+        self.stop_distance_entry = ctk.CTkEntry(self, placeholder_text="Distance from Price", width=60)
         self.stop_distance_entry.insert(0, "30")
-        self.stop_distance_entry.grid(row=4, column=1, pady=10, padx=10)
-        
+        self.stop_distance_entry.grid(row=4, column=1, pady=5, padx=10, sticky="w")
+
         # Timeout Entry
-        self.timeout_entry = ctk.CTkEntry(self, placeholder_text="Timeout", width=200)
+        self.timeout_entry = ctk.CTkEntry(self, placeholder_text="Timeout", width=60)
         self.timeout_entry.insert(0, "60")
-        self.timeout_entry.grid(row=5, column=1, pady=10, padx=10)
+        self.timeout_entry.grid(row=5, column=1, pady=5, padx=10, sticky="w")
 
         # Time Picker
         self.news_time_hour = ctk.CTkComboBox(self, values=[f"{i:02d}" for i in range(24)], width=60)
-        self.news_time_hour.grid(row=6, column=1, pady=10, padx=10, sticky="ew")
+        self.news_time_hour.grid(row=6, column=1, pady=10, padx=10, sticky="w")
         self.news_time_minute = ctk.CTkComboBox(self, values=[f"{i:02d}" for i in range(60)], width=60)
-        self.news_time_minute.grid(row=6, column=2, pady=10, padx=10, sticky="ew")
+        self.news_time_minute.grid(row=6, column=2, pady=10, padx=10, sticky="w")
         self.news_time_second = ctk.CTkComboBox(self, values=[f"{i:02d}" for i in range(60)], width=60)
-        self.news_time_second.grid(row=6, column=3, pady=10, padx=10, sticky="ew")
+        self.news_time_second.grid(row=6, column=3, pady=10, padx=10, sticky="w")
+                
+        # ... [previous code for labels and entries]
 
-        # Button
+        # Start Trading Button
         self.start_button = ctk.CTkButton(self, text="Start Trading", command=self.start_trading_thread, fg_color="green")
-        self.start_button.grid(row=7, column=0, columnspan=4, pady=10, padx=5)
+        self.start_button.grid(row=7, column=0, columnspan=4, pady=5, padx=5)
 
         # Cancel All Pending Orders Button
         self.cancel_button = ctk.CTkButton(self, text="Cancel All Pending Orders", command=self.cancel_all_pending_orders, fg_color="red")
-        self.cancel_button.grid(row=8, column=0, pady=10, padx=10)
+        self.cancel_button.grid(row=7, column=0, pady=10, padx=10)
+
+        # ... [remaining code for output textbox and current time display]
 
 
         # Output Text Box
@@ -101,7 +109,7 @@ class TradingApp(ctk.CTk):
 
         # Current Time Display
         self.current_time_label = ctk.CTkLabel(self, text="")
-        self.current_time_label.grid(row=7, column=2, columnspan=4, pady=10, padx=5)
+        self.current_time_label.grid(row=8, column=2, columnspan=4, pady=5, padx=5)
 
 
     def cancel_all_pending_orders(self):

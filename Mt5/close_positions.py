@@ -5,7 +5,7 @@ if not mt5.initialize():
     print("initialize() failed, error code =", mt5.last_error())
     quit()
 
-symbol = "EURUSDm"
+symbol = "XAUUSD"
 
 # Get positions for the specified symbol
 positions = mt5.positions_get(symbol=symbol)
