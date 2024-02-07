@@ -1,0 +1,20 @@
+[
+    {
+        "date": null,
+        "impact": "high",
+        "currency": "USD",
+        "event": "Core Retail Sales m/m",
+        "actual": "0.2%",
+        "forecast": "0.2%",
+        "previous": null
+    },
+    {
+        "date": null,
+        "impact": "high",
+        "currency": "USD",
+        "event": "Retail Sales m/m",
+        "actual": "0.4%",
+        "forecast": "0.3%",
+        "previous": null
+    }
+]
