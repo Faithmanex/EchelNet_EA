@@ -48,9 +48,14 @@ class NewsCalendar:
             browser_options.add_argument(arg)
 
 
-        service = Service(executable_path='./chromedriver')
+        browser_options.binary_location = os.path.join(self.chrome_dir, "chrome.exe")
+        chromedriver_path = os.path.join(self.chrome_dir, "chromedriver.exe")
+        service = Service(chromedriver_path)
+        browser_options.add_argument(f"webdriver.chrome.driver={chromedriver_path}")
+        # driver = webdriver.Chrome(options=browser_options)
         driver = webdriver.Chrome(service=service, options=browser_options)
 
+        
         return driver
 
     def parse_impact(self, data_table):
