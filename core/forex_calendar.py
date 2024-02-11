@@ -126,8 +126,8 @@ class NewsCalendar:
             # Check if a date is present and extract it
             if any(time_indicator in value[0] for time_indicator in ["am", "pm"]):
                 event_data["date"] = format_date(value.pop(0))
-            else:
-                event_data["date"] = None
+            # else:
+            #     event_data["date"] = None
 
             # Assign impact, currency, and event name
             event_data["impact"] = impact

@@ -1,17 +1,20 @@
 # Note: Set the time to 2 seconds before News Event
 
 import datetime
-import pytz
 import time
 import MetaTrader5 as mt5
 import threading
 import subprocess
+import json
+from datetime import date
+import pytz
 
 class TradingBot:
     def __init__(self, tkInstance) -> None:
         self.tk = tkInstance
+        pass
 
-    def execute_trades(self, symbol, lot, stop_loss, take_profit, stop_distance, timeout, news_time) -> str:
+    def execute_trades(self, symbol, lot, stop_loss, take_profit, stop_distance, news_time) -> str:
     # existing method implementation        # create a timezone object for WAT
         wat = pytz.timezone('Africa/Lagos')
 
@@ -42,8 +45,8 @@ class TradingBot:
         SELL_MAGIC = 654321
 
 
-        result = ''
-        result1 = ''
+        # result = ''
+        # result1 = ''
 
         request = {
             "action": mt5.TRADE_ACTION_PENDING,
@@ -97,8 +100,7 @@ class TradingBot:
                     return error, ask_price, deviation, result, result1
 
                 mt5.shutdown()
-
-                
+         
         
     def timeout(symbol: str):
         
@@ -158,3 +160,40 @@ class TradingBot:
             else:
                 print("Pending order deleted")
                 return
+
+
+
+    def auto_trade(self, calendar='./forex_calendar.json', user_settings="user_data.json") -> None:
+
+        # Open the JSON file
+        with open(user_settings) as user_file:
+            settings = json.load(user_file)
+        
+        with open(calendar) as file:
+            all_date_data = json.load(file)
+
+        for date_data in all_date_data:
+            news_day = date_data["date"].split(' ')[0]
+            news_time = date_data["date"].split(' ')[1]
+
+            if news_day == str(date.today()):
+                error, price, deviation, result, result1 = self.execute_trades(settings["symbol"], 
+                                                                               settings["lot"], 
+                                                                               settings["stop_loss"], 
+                                                                               settings["take_profit"], 
+                                                                               settings["stop_distance"], 
+                                                                               news_time)
+
+            #handle timeout
+            if error == "order sent":
+                time.sleep(settings["timeout"])
+                self.timeout(settings["symbol"])      
+            
+
+        
+
+
+
+
+# new = TradingBot()
+# new.auto_trade()

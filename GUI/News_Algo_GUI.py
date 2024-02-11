@@ -10,6 +10,7 @@ import threading
 import sys
 sys.path.append("..")
 from core.News_Algo import TradingBot
+import json
 
 
 
@@ -104,6 +105,10 @@ class TradingApp(ctk.CTk):
         self.cancel_button = ctk.CTkButton(self, text="Cancel All Pending Orders", command=lambda: TradingBot.cancel_all_pending_orders(self), fg_color="red")
         self.cancel_button.grid(row=7, column=0, pady=10, padx=10)
 
+        # Auto Trading Button
+        self.start_button = ctk.CTkButton(self, text="Auto Trade", command=lambda: self.get_user_data("auto"), fg_color="blue")
+        self.start_button.grid(row=7, column=2, columnspan=4, pady=5, padx=5)
+
         # ... [remaining code for output textbox and current time display]
 
 
@@ -123,21 +128,49 @@ class TradingApp(ctk.CTk):
             height = min(len(lines), 50) # Limit the maximum height to 50 lines
             event.widget.config(height=height)
 
-    def start_trading(self):
-        # self.symbol = self.symbol_entry.get()
-        self.symbol = self.symbol_menu.get()
-        self.lot = float(self.lot_entry.get())
+
+
+
+
+    # Funtions 
+    def update_time(self):
+        now = datetime.datetime.now().strftime("%H:%M:%S")
+        self.current_time_label.configure(text=f"Current Time: {now}")
+        self.after(1000, self.update_time)
+    
+    def get_user_data(self, mode):
+        symbol = self.symbol_menu.get()
+        lot = float(self.lot_entry.get())
         stop_loss = float(self.stop_loss_entry.get())
         take_profit = float(self.take_profit_entry.get())
         stop_distance = float(self.stop_distance_entry.get())
         timeout = float(self.timeout_entry.get())
+
+        data = {
+            "symbol": symbol,
+            "lot": lot,
+            "stop_loss": stop_loss,
+            "take_profit": take_profit,
+            "stop_distance": stop_distance,
+            "timeout": timeout
+        }
+
+        if mode == "auto":
+            with open("../core/user_data.json", 'w') as file:
+                json.dump(data, file, indent=4)
+        elif mode == "start":
+            return symbol, lot, stop_loss, take_profit, stop_distance, timeout
+
+    def start_trading(self):
+        # Get the data
+        self.symbol, self.lot, stop_loss,take_profit, stop_distance, timeout = self.get_user_data("start")
         news_time_hour = self.news_time_hour.get() 
         news_time_minute = self.news_time_minute.get()
         news_time_second = self.news_time_second.get()
         news_time = f"{news_time_hour}:{news_time_minute}:{news_time_second}"
 
         self.output_text_box.insert(tk.END, f"Sending order for symbol: {self.symbol}\nTime: {news_time}\nLot Size: {self.lot}\nStop Loss: {stop_loss} points\nTake Profit: {take_profit} points \nStop Distance: {stop_distance}\nTimeout: {timeout}\n\n")
-        error, price, deviation, result, result1 = self.tradingBot.execute_trades(self.symbol, self.lot, stop_loss, take_profit, stop_distance, timeout, news_time)
+        error, price, deviation, result, result1 = self.tradingBot.execute_trades(self.symbol, self.lot, stop_loss, take_profit, stop_distance, news_time)
 
         # handle the responses from the trading bot
         self.handle_error(error, price, deviation, result, result1)
@@ -163,16 +196,26 @@ class TradingApp(ctk.CTk):
                         result.retcode, mt5.last_error(), result1.retcode, mt5.last_error()
                     ))
 
+        
 
+
+
+
+
+
+    # Multithreading functions
+            
     def start_trading_thread(self):
         # Create a new thread and run self.start_trading in that thread
         trading_thread = threading.Thread(target=self.start_trading)
         trading_thread.start()
 
-    def update_time(self):
-        now = datetime.datetime.now().strftime("%H:%M:%S")
-        self.current_time_label.configure(text=f"Current Time: {now}")
-        self.after(1000, self.update_time)
+    # def start_auto_trading_thread(self):
+    #     # Create a new thread and run self.start_trading in that thread
+    #     trading_thread = threading.Thread(target=self.auto_trade)
+    #     trading_thread.start()
+
+
 
 if __name__ == "__main__":
     app = TradingApp()
