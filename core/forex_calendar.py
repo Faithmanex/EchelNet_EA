@@ -154,8 +154,8 @@ class NewsCalendar:
 
 if __name__ == "__main__":
     url = "https://www.forexfactory.com/calendar?day=today"
-    filename = "./forex_calendar.json"
+    filename = "./json_data/forex_calendar.json"
     calendar_news = NewsCalendar(
-        url, os.path.expanduser("."), filename
+        url, os.path.expanduser("./chrome"), filename
     )
     calendar_news.run()

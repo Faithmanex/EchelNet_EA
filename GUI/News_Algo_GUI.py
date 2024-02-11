@@ -156,7 +156,7 @@ class TradingApp(ctk.CTk):
         }
 
         if mode == "auto":
-            with open("../core/user_data.json", 'w') as file:
+            with open("../core/json_data/user_data.json", 'w') as file:
                 json.dump(data, file, indent=4)
         elif mode == "start":
             return symbol, lot, stop_loss, take_profit, stop_distance, timeout
@@ -197,10 +197,6 @@ class TradingApp(ctk.CTk):
                     ))
 
         
-
-
-
-
 
 
     # Multithreading functions

@@ -1,9 +1,8 @@
 env/
-/core/__pycache__
-*/__pycache__
+/core/__pycache__/
+*/__pycache__/
 __pycache__
 image.jpeg
-/.vscode
+/.vscode/
 /core/chrome
-/core/forex_calendar.json
-/core/user_data.json
+/core/json_data/
