@@ -203,5 +203,5 @@ class AutoBot:
                 self.trade.cancel_all_pending_orders(currency)      
 
 
-new = AutoBot()
-new.auto_trade()
+# new = AutoBot()
+# new.auto_trade()
