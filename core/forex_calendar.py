@@ -97,9 +97,7 @@ class NewsCalendar:
     def serialize_to_dict(
         self, value_list: list[list[str]], impacts: list[str]
     ) -> list[dict[str, str | None]]:
-        # Define desired currencies and impacts
-        desired_currencies = ["GBP", "USD", "EUR"]
-        desired_impacts = ["high"]
+        
 
         def format_date(date_str: str, now=datetime.datetime.now()):
             parsed_date = datetime.datetime.strptime(date_str, "%I:%M%p")
@@ -114,9 +112,6 @@ class NewsCalendar:
         event_data_list = []
 
         for value, impact in zip(value_list, impacts):
-            # Skip events with undesired impact or currency
-            if impact not in desired_impacts or value[0] not in desired_currencies:
-                continue  
 
             event_data = {}
             if value[0].startswith(tuple(calendar.day_abbr)):
@@ -126,8 +121,8 @@ class NewsCalendar:
             # Check if a date is present and extract it
             if any(time_indicator in value[0] for time_indicator in ["am", "pm"]):
                 event_data["date"] = format_date(value.pop(0))
-            # else:
-            #     event_data["date"] = None
+            else:
+                event_data["date"] = None
 
             # Assign impact, currency, and event name
             event_data["impact"] = impact
