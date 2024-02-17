@@ -1,12 +1,6 @@
-# Note: Set the time to 2 seconds before News Event
 
-import datetime
-import time
+from datetime import datetime
 import MetaTrader5 as mt5
-import threading
-import subprocess
-import json
-from datetime import datetime, timedelta, date
 import pytz
 
 
@@ -35,9 +29,9 @@ class TradingBot:
                 mt5.shutdown()
                 return response, None, None, None, None
 
-        point = symbol_info.point
-        ask_price = mt5.symbol_info_tick(symbol).ask
-        bid_price = mt5.symbol_info_tick(symbol).bid
+        self.point = symbol_info.point
+        self.ask_price = mt5.symbol_info_tick(symbol).ask
+        self.bid_price = mt5.symbol_info_tick(symbol).bid
         deviation = 20
         BUY_MAGIC = 123456
         SELL_MAGIC = 654321
@@ -51,8 +45,8 @@ class TradingBot:
             "symbol": symbol,
             "volume": lot,
             "type": mt5.ORDER_TYPE_BUY_STOP,
-            "price": ask_price + stop_distance * point,
-            "sl": ask_price - stop_loss * point,
+            "price": self.ask_price + stop_distance * self.point,
+            "sl": self.ask_price - stop_loss * self.point,
             "deviation": deviation,
             "magic": BUY_MAGIC,
             "comment": "EchelNet News EA",
@@ -65,8 +59,8 @@ class TradingBot:
             "symbol": symbol,
             "volume": lot,
             "type": mt5.ORDER_TYPE_SELL_STOP,
-            "price": bid_price - stop_distance * point,
-            "sl": bid_price + stop_loss * point,
+            "price": self.bid_price - stop_distance * self.point,
+            "sl": self.bid_price + stop_loss * self.point,
             "deviation": deviation,
             "magic": SELL_MAGIC,
             "comment": "EchelNet News EA",
@@ -91,11 +85,52 @@ class TradingBot:
                 
                 if result.retcode != mt5.TRADE_RETCODE_DONE or result1.retcode != mt5.TRADE_RETCODE_DONE:
                     response = 'order sent error'
-                    return response, ask_price, deviation, result, result1
+                    return response, self.ask_price, deviation, result, result1
                 else:
                     response = "order sent"
-                    return response, ask_price, deviation, result, result1
-         
+                    return response, self.ask_price, deviation, result, result1
+
+    def add_extra_position(self, symbol):
+
+        while True:
+            # Get the currently open orders for the specified symbol
+            orders = mt5.OrdersGet(symbol=symbol)
+
+            # Loop through the open orders to check their status
+            for order in orders:
+                ticket = order['ticket']
+                status = order['status']
+
+                if status == mt5.ORDER_STATUS_BUY_STOP_LIMIT:
+                    # Order is activated
+                    print(f"Buy Order {ticket} activated at price {order['price']}")
+
+                elif status == mt5.ORDER_STATUS_SELL_STOP_LIMIT:
+                    # Order is activated
+                    print(f"Sell Order {ticket} activated at price {order['price']}")
+    
+
+        # while True :
+        #     orders = mt5.orders_get(symbol)
+
+        #     if orders is None:
+        #         print("No orders found.")
+
+        #     for position in orders:
+        #         # Check if the position is a sell stop order
+        #         if position.type == mt5.ORDER_TYPE_SELL_STOP:                
+        #             # Check if the sell stop order has been triggered
+        #             if position.open_price <= self.bid_price:
+        #                 print("Sell stop order activated.")
+        #                 break
+                    
+        #         # Check if the position is a buy stop order
+        #         elif position.type == mt5.ORDER_TYPE_BUY_STOP:
+        #             # Check if the buy stop order has been triggered
+        #             if position.open_price <= self.ask_price:
+        #                 print("Buy stop order activated.")
+        #                 break
+
         
     def cancel_all_pending_orders(self, symbol):
         # Get all orders
@@ -123,84 +158,7 @@ class TradingBot:
                 print("Pending order deleted")
 
 
-
-
-class AutoBot:
-    def __init__(self, user_settings="./json_data/user_data.json", calendar='./json_data/forex_calendar.json'):
-         # Open the JSON file
-        with open(user_settings) as user_file:
-            self.settings = json.load(user_file)
-        
-        with open(calendar) as file:
-            self.calendar = json.load(file)
-
-        self.trade = TradingBot()
-
-    def filter_news(self):
-        # Define desired currencies and impacts
-        desired_currencies = ["GBP", "USD", "EUR"]
-        desired_impacts = ["high"]
-        previous_date = None
-        new_calendar_data = []
-
-        for calendar_data in self.calendar:
-        
-             # Attach a date if none present
-            if calendar_data["date"] == None:
-                calendar_data["date"] = previous_date
-            else:
-                previous_date = calendar_data["date"]
-
-            # Skip events with undesired impact or currency
-            if calendar_data["impact"] not in desired_impacts or calendar_data["currency"] not in desired_currencies:
-                continue
-
-            new_calendar_data.append(calendar_data)
-        
-        # Filter the data to remove news with the same time
-        filtered_data = [new_calendar_data[0]]
-
-        for data in new_calendar_data[1:]:
-            if data["date"] != filtered_data[-1]["date"]:
-                filtered_data.append(data)
-
-        return filtered_data
- 
-
-       
-    def auto_trade(self) -> None:
-        
-        # Get the news events we'll be taking
-        trading_news = self.filter_news()
-
-        for news_event in trading_news:
-
-            news_day = news_event["date"].split(' ')[0] # News day
-            news_time = news_event["date"].split(' ')[1] # News time
-            time_object = datetime.strptime(news_time, '%H:%M:%S').time()
-
-            # change the news time to take it 3 seconds before the actual time
-            new_time = str((datetime.combine(datetime.min, time_object) - timedelta(seconds=3)).time())
-
-            # Converting the currency to a readable form by the terminal
-            if news_event['currency'] == "GBP":
-                currency = news_event['currency'] + "USD"
-            elif news_event['currency'] == "EUR" or  news_event['currency'] == "USD":
-                currency = "EURUSD"
-            
-
-            if news_day == str(date.today()):
-                response, _, _, _, _, = self.trade.execute_trades(currency, 
-                                                        self.settings["lot"], 
-                                                        self.settings["stop_loss"], 
-                                                        self.settings["stop_distance"], 
-                                                        new_time)
-                
-
-            #handle timeout
-            if response == "order sent":
-                time.sleep(self.settings["timeout"])
-                self.trade.cancel_all_pending_orders(currency)      
+  
 
 
 # new = AutoBot()
