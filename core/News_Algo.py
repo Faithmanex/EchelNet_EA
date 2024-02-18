@@ -97,7 +97,9 @@ class TradingBot:
         # Check if there are any positions with the magic_numbers of buy stop or sell stop
         result_buy_stop = ''
         result_sell_stop = ''
-        while True:
+        loop_variable = True
+
+        while loop_variable:
             positions = mt5.positions_get(symbol=symbol)
 
             for position in positions:
@@ -120,7 +122,7 @@ class TradingBot:
 
                     print("Buy stop order triggered. Sending Sell Stop.")
                     
-                    return
+                    loop_variable = False
 
                 elif position.magic == SELL_MAGIC:
                     # Sell stop order triggered, send another buy stop order
@@ -140,20 +142,11 @@ class TradingBot:
                     result_buy_stop = mt5.order_send(request_buy_stop)
                     print("Sell stop order triggered. Sending Buy Stop.")
                     
-                    return
-                return result_buy_stop, result_sell_stop
+                    loop_variable = False
 
-    # def add_extra_position(self, symbol):
-    #     while True:
-    #         orders = mt5.orders_get(symbol=symbol)
+                # return result_buy_stop, result_sell_stop
+            
 
-    #         if orders:  # Check if any orders exist
-    #             for order in orders:
-    #                 if order[1] == mt5.ORDER_STATUS_BUY_STOP_LIMIT:  # Assume 2nd element holds status
-    #                     print(f"Buy Order {order[0]} activated at price {order[2]}")
-
-    #                 elif order[1] == mt5.ORDER_STATUS_SELL_STOP_LIMIT:
-    #                     print(f"Sell Order {order[0]} activated at price {order[2]}")
 
 
     def cancel_all_pending_orders(self, symbol):

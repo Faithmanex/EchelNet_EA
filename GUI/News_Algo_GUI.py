@@ -227,7 +227,7 @@ class TradingApp(ctk.CTk):
 
 if __name__ == "__main__":
     app = TradingApp()
+    app.update_time()
+    app.mainloop()
 
-    app.start_auto_trading_thread()
-    # app.update_time()
-    # app.mainloop()
+    # app.start_auto_trading_thread()

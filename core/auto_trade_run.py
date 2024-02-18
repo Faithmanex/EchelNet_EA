@@ -36,5 +36,3 @@ def run_automatically():
     while True:
         schedule.run_pending()
         time.sleep(20)
-
-run_automatically()
