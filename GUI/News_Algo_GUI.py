@@ -1,16 +1,17 @@
-import tkinter as tk
-import customtkinter as ctk
-import datetime
+import os
+import sys
+import json
 import pytz
 import time
-import MetaTrader5 as mt5
-from tkinter import messagebox
+import datetime
 import threading
-# from core.News_Algo import ManualMode
-import sys
+import tkinter as tk
+import MetaTrader5 as mt5
+import customtkinter as ctk
+from tkinter import messagebox
 sys.path.append("..")
+from core import auto_trade_run
 from core.News_Algo import TradingBot
-import json
 
 
 mt5.initialize()
@@ -25,6 +26,11 @@ class TradingApp(ctk.CTk):
         self.title("EchelNet News Algo")
         self.geometry("550x600")
         ctk.set_appearance_mode("dark")
+
+        # create a directory to save all json files
+        directory_path = "C:\\Users\\Adewu\\Desktop\\projects\\EchelNet_EA\\core\\json_data"
+        if not os.path.exists(directory_path):
+            os.makedirs(directory_path)
 
         # Initialize the connection
         if not mt5.initialize():
@@ -97,11 +103,11 @@ class TradingApp(ctk.CTk):
         self.start_button.grid(row=7, column=0, columnspan=4, pady=5, padx=5)
 
         # Cancel All Pending Orders Button
-        self.cancel_button = ctk.CTkButton(self, text="Cancel All Pending Orders", command=lambda: self.tradingBot.cancel_all_pending_orders(self), fg_color="red")
+        self.cancel_button = ctk.CTkButton(self, text="Cancel All Pending Orders", command=lambda: self.tradingBot.cancel_all_pending_orders(self.symbol), fg_color="red")
         self.cancel_button.grid(row=7, column=0, pady=10, padx=10)
 
         # Auto Trading Button
-        self.start_button = ctk.CTkButton(self, text="Auto Trade", command=lambda: self.get_user_data("auto"), fg_color="blue")
+        self.start_button = ctk.CTkButton(self, text="Auto Trade", command=lambda: self.start_auto_trading_thread(), fg_color="blue")
         self.start_button.grid(row=7, column=2, columnspan=4, pady=5, padx=5)
 
         # ... [remaining code for output textbox and current time display]
@@ -130,6 +136,14 @@ class TradingApp(ctk.CTk):
         now = datetime.datetime.now().strftime("%H:%M:%S")
         self.current_time_label.configure(text=f"Current Time: {now}")
         self.after(1000, self.update_time)
+
+
+    def automatic_run(self):
+        self.get_user_data('auto')
+        print("user data done")
+
+        # run automatically
+        auto_trade_run.run_automatically()
     
     def get_user_data(self, mode):
         lot = float(self.lot_entry.get())
@@ -170,6 +184,12 @@ class TradingApp(ctk.CTk):
 
         #handle timeout
         if response == "order sent":
+            # This is to add extra positon to the buy or sell stop when either of them is triggered
+            # Used to cover losses and recover all
+            BUY_MAGIC = 123456
+            SELL_MAGIC = 654321
+            self.tradingBot.check_triggered_orders(self.symbol, BUY_MAGIC, SELL_MAGIC, deviation)
+                
             time.sleep(timeout)
             self.tradingBot.cancel_all_pending_orders(self.symbol)
 
@@ -187,11 +207,7 @@ class TradingApp(ctk.CTk):
         elif errorCode == "order sent":
             self.output_text_box.insert(tk.END, "1. order_send(): by {} {} lots at {} with deviation={} points\n".format(self.symbol, self.lot, price, deviation))
         elif errorCode == "order sent error":
-            self.output_text_box.insert(tk.END, "2. order_send failed, retcode={} ({}), retcode1={} ({})\n".format(
-                        result.retcode, mt5.last_error(), result1.retcode, mt5.last_error()
-                    ))
-
-        
+            self.output_text_box.insert(tk.END, f"2. order_send failed, retcode={result.retcode} ({mt5.last_error()}), retcode1={result1.retcode} ({mt5.last_error()})\n")
 
 
     # Multithreading functions
@@ -201,10 +217,11 @@ class TradingApp(ctk.CTk):
         trading_thread = threading.Thread(target=self.start_trading)
         trading_thread.start()
 
-    # def start_auto_trading_thread(self):
-    #     # Create a new thread and run self.start_trading in that thread
-    #     trading_thread = threading.Thread(target=self.auto_trade)
-    #     trading_thread.start()
+    def start_auto_trading_thread(self):
+        # Create a new thread and run self.start_trading in that thread
+        print('here')
+        trading_thread = threading.Thread(target=self.automatic_run)
+        trading_thread.start()
 
 
 
