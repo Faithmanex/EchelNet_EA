@@ -186,7 +186,9 @@ class TradingApp(ctk.CTk):
         if response == "order sent":
             # This is to add extra positon to the buy or sell stop when either of them is triggered
             # Used to cover losses and recover all
-            # self.tradingBot.add_extra_position(self.symbol)
+            BUY_MAGIC = 123456
+            SELL_MAGIC = 654321
+            self.tradingBot.check_triggered_orders(self.symbol, BUY_MAGIC, SELL_MAGIC, deviation)
                 
             time.sleep(timeout)
             self.tradingBot.cancel_all_pending_orders(self.symbol)

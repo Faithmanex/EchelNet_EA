@@ -1,21 +1,21 @@
-
 from datetime import datetime
 import MetaTrader5 as mt5
 import pytz
 
-
 class TradingBot:
+    def __init__(self):
+        self.buy_stop_price = 0
+        self.sell_stop_price = 0
+        self.buy_stop_ticket = 0
+        self.sell_stop_ticket = 0
 
     def execute_trades(self, symbol, lot, stop_loss, stop_distance, news_time) -> str:
-    # existing method implementation        # create a timezone object for WAT
         wat = pytz.timezone('Africa/Lagos')
 
-        # establish connection to the MetaTrader 5 terminal
         if not mt5.initialize():
-            response = "initialise error"
+            response = "initialize error"
             return response, None, None, None, None
 
-        # prepare the buy request structure
         symbol_info = mt5.symbol_info(symbol)
         if symbol_info is None:
             response = "symbol not found"
@@ -32,13 +32,9 @@ class TradingBot:
         self.point = symbol_info.point
         self.ask_price = mt5.symbol_info_tick(symbol).ask
         self.bid_price = mt5.symbol_info_tick(symbol).bid
-        deviation = 20
+        deviation = 200
         BUY_MAGIC = 123456
         SELL_MAGIC = 654321
-
-
-        # result = ''
-        # result1 = ''
 
         request = {
             "action": mt5.TRADE_ACTION_PENDING,
@@ -68,21 +64,28 @@ class TradingBot:
             "type_filling": mt5.ORDER_FILLING_RETURN,
         }
         
+        
+        # start the time loop
+
         # start the time loop
         while True:
             now_wat = datetime.now(wat)
             formatted_time = now_wat.strftime("%H:%M:%S")
-            # print("Current time:", formatted_time)
-            # self.tk.output_text_box.insert(self.tk.END, "{}\n".format(formatted_time))
-            
+
             if formatted_time == news_time:
-                print("\nSending orders...\n")
+                print(f"\nSending orders...\nBuy Stop: {request['price']}\nSell Stop: {request1['price']}")
                 result = mt5.order_send(request)
+                self.buy_stop_price = request['price']
+                self.buy_stop_sl = request['sl']
+                self.buy_stop_ticket = result.order
                 print(datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
+                
                 result1 = mt5.order_send(request1)
+                self.sell_stop_price = request1['price']
+                self.sell_stop_sl = request1['sl']
+                self.sell_stop_ticket = result1.order
                 print(datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
 
-                
                 if result.retcode != mt5.TRADE_RETCODE_DONE or result1.retcode != mt5.TRADE_RETCODE_DONE:
                     response = 'order sent error'
                     return response, self.ask_price, deviation, result, result1
@@ -90,50 +93,70 @@ class TradingBot:
                     response = "order sent"
                     return response, self.ask_price, deviation, result, result1
 
-    def add_extra_position(self, symbol):
-
+    def check_triggered_orders(self, symbol, BUY_MAGIC, SELL_MAGIC, deviation):
+        # Check if there are any positions with the magic_numbers of buy stop or sell stop
+        result_buy_stop = ''
+        result_sell_stop = ''
         while True:
-            # Get the currently open orders for the specified symbol
-            orders = mt5.OrdersGet(symbol=symbol)
+            positions = mt5.positions_get(symbol=symbol)
 
-            # Loop through the open orders to check their status
-            for order in orders:
-                ticket = order['ticket']
-                status = order['status']
+            for position in positions:
+                if position.magic == BUY_MAGIC:
+                    # Buy stop order triggered, send another sell stop order
+                    request_sell_stop = {
+                        "action": mt5.TRADE_ACTION_PENDING,
+                        "symbol": symbol,
+                        "volume": position.volume,
+                        "type": mt5.ORDER_TYPE_SELL_STOP,
+                        "price": self.sell_stop_price,
+                        "sl": self.sell_stop_sl,
+                        "deviation": deviation,
+                        "magic": SELL_MAGIC,
+                        "comment": "EchelNet News EA",
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": mt5.ORDER_FILLING_RETURN,
+                    }
+                    result_sell_stop = mt5.order_send(request_sell_stop)
 
-                if status == mt5.ORDER_STATUS_BUY_STOP_LIMIT:
-                    # Order is activated
-                    print(f"Buy Order {ticket} activated at price {order['price']}")
-
-                elif status == mt5.ORDER_STATUS_SELL_STOP_LIMIT:
-                    # Order is activated
-                    print(f"Sell Order {ticket} activated at price {order['price']}")
-    
-
-        # while True :
-        #     orders = mt5.orders_get(symbol)
-
-        #     if orders is None:
-        #         print("No orders found.")
-
-        #     for position in orders:
-        #         # Check if the position is a sell stop order
-        #         if position.type == mt5.ORDER_TYPE_SELL_STOP:                
-        #             # Check if the sell stop order has been triggered
-        #             if position.open_price <= self.bid_price:
-        #                 print("Sell stop order activated.")
-        #                 break
+                    print("Buy stop order triggered. Sending Sell Stop.")
                     
-        #         # Check if the position is a buy stop order
-        #         elif position.type == mt5.ORDER_TYPE_BUY_STOP:
-        #             # Check if the buy stop order has been triggered
-        #             if position.open_price <= self.ask_price:
-        #                 print("Buy stop order activated.")
-        #                 break
+                    return
 
-        
+                elif position.magic == SELL_MAGIC:
+                    # Sell stop order triggered, send another buy stop order
+                    request_buy_stop = {
+                        "action": mt5.TRADE_ACTION_PENDING,
+                        "symbol": symbol,
+                        "volume": position.volume,
+                        "type": mt5.ORDER_TYPE_BUY_STOP,
+                        "price": self.buy_stop_price,
+                        "sl": self.buy_stop_sl,
+                        "deviation": deviation,
+                        "magic": BUY_MAGIC,
+                        "comment": "EchelNet News EA",
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": mt5.ORDER_FILLING_RETURN,
+                    }
+                    result_buy_stop = mt5.order_send(request_buy_stop)
+                    print("Sell stop order triggered. Sending Buy Stop.")
+                    
+                    return
+                return result_buy_stop, result_sell_stop
+
+    # def add_extra_position(self, symbol):
+    #     while True:
+    #         orders = mt5.orders_get(symbol=symbol)
+
+    #         if orders:  # Check if any orders exist
+    #             for order in orders:
+    #                 if order[1] == mt5.ORDER_STATUS_BUY_STOP_LIMIT:  # Assume 2nd element holds status
+    #                     print(f"Buy Order {order[0]} activated at price {order[2]}")
+
+    #                 elif order[1] == mt5.ORDER_STATUS_SELL_STOP_LIMIT:
+    #                     print(f"Sell Order {order[0]} activated at price {order[2]}")
+
+
     def cancel_all_pending_orders(self, symbol):
-        # Get all orders
         orders = mt5.orders_get(symbol=symbol)
         
         # Check if orders is None
@@ -145,7 +168,6 @@ class TradingBot:
         # Assuming that a pending order is either a BUY_STOP or SELL_STOP order
         pending_orders = [order for order in orders if order.type == mt5.ORDER_TYPE_BUY_STOP or order.type == mt5.ORDER_TYPE_SELL_STOP]
         
-        # Cancel each pending order
         for order in pending_orders:
             trade_request = {
                 "action": mt5.TRADE_ACTION_REMOVE,
@@ -158,8 +180,13 @@ class TradingBot:
                 print("Pending order deleted")
 
 
-  
-
 
 # new = AutoBot()
 # new.auto_trade()
+
+# Example Usage:
+# bot = TradingBot()
+# bot.execute_trades("EURUSD", 0.1, 10, 50, "12:30:00")
+# bot.add_extra_position("EURUSD")
+# bot.check_triggered_orders("EURUSD")
+# bot.cancel_all_pending_orders("EURUSD")
