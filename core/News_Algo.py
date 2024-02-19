@@ -123,7 +123,8 @@ class TradingBot:
                     print("Buy stop order triggered. Sending Sell Stop.")
                     
                     loop_variable = False
-
+                    break
+                    
                 elif position.magic == SELL_MAGIC:
                     # Sell stop order triggered, send another buy stop order
                     request_buy_stop = {
@@ -143,8 +144,7 @@ class TradingBot:
                     print("Sell stop order triggered. Sending Buy Stop.")
                     
                     loop_variable = False
-
-                # return result_buy_stop, result_sell_stop
+                    break
             
 
 

@@ -28,7 +28,7 @@ class TradingApp(ctk.CTk):
         ctk.set_appearance_mode("dark")
 
         # create a directory to save all json files
-        directory_path = "C:\\Users\\Adewu\\Desktop\\projects\\EchelNet_EA\\core\\json_data"
+        directory_path = "..\\core\\json_data"
         if not os.path.exists(directory_path):
             os.makedirs(directory_path)
 

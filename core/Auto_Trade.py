@@ -52,7 +52,6 @@ class AutoBot:
         # Get the news events we'll be taking
         trading_news = self.filter_news()
 
-        print(trading_news)
         for news_event in trading_news:
 
             news_time = news_event["date"].split(' ')[1] # News time
@@ -68,7 +67,7 @@ class AutoBot:
                 currency = "EURUSD"
             
             # Place the order
-            response, _, _, _, _, = self.trade.execute_trades(currency, 
+            response, _, deviation, _, _, = self.trade.execute_trades(currency, 
                                                     self.settings["lot"], 
                                                     self.settings["stop_loss"], 
                                                     self.settings["stop_distance"], 
@@ -77,6 +76,12 @@ class AutoBot:
 
             #handle timeout
             if response == "order sent":
+                # This is to add extra positon to the buy or sell stop when either of them is triggered
+                # Used to cover losses and recover all
+                BUY_MAGIC = 123456
+                SELL_MAGIC = 654321
+                self.trade.check_triggered_orders(currency, BUY_MAGIC, SELL_MAGIC, deviation)
+
                 time.sleep(self.settings["timeout"])
                 self.trade.cancel_all_pending_orders(currency)    
 

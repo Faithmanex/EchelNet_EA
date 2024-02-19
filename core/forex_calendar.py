@@ -11,6 +11,8 @@ class NewsCalendar:
         self.filename = filename
         self.driver = self.create_driver()
 
+        print(self.chrome_dir)
+
     def run(self, save=True):
         value_list, impacts = self.parse_data()
         serialzed = self.serialize_to_dict(value_list, impacts)
@@ -150,7 +152,9 @@ class NewsCalendar:
 if __name__ == "__main__":
     url = "https://www.forexfactory.com/calendar?day=today"
     filename = "./json_data/forex_calendar.json"
+    chrome_driver_dir = os.path.abspath('chrome')
+
     calendar_news = NewsCalendar(
-        url, os.path.expanduser("./chrome"), filename
+        url, os.path.expanduser(chrome_driver_dir), filename
     )
     calendar_news.run()
