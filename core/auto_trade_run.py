@@ -21,6 +21,7 @@ schedule.every().day.at("00:05").do(run_auto_bot)
 def run_automatically():
     # change the current working directory
     os.chdir(os.path.dirname(__file__))
+    print("Auto Bot started")
     while True:
         schedule.run_pending()
         time.sleep(10)
