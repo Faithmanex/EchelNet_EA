@@ -8,9 +8,21 @@ class TradingBot:
         self.sell_stop_price = 0
         self.buy_stop_ticket = 0
         self.sell_stop_ticket = 0
+    
+    def convert_to_lagos_timezone(self, input_time):
+        input_time_obj = datetime.strptime(input_time, "%H:%M:%S")
+
+        # Set the timezone for Lagos
+        lagos_timezone = pytz.timezone('Africa/Lagos')
+        input_time_utc = pytz.utc.localize(input_time_obj)
+
+        # Convert to Lagos timezone
+        lagos_time = input_time_utc.astimezone(lagos_timezone)
+
+        return lagos_time.strftime("%H:%M:%S")
 
     def execute_trades(self, symbol, lot, stop_loss, stop_distance, news_time) -> str:
-        wat = pytz.timezone('Africa/Lagos')
+        # wat = pytz.timezone('Africa/Lagos')
 
         if not mt5.initialize():
             response = "initialize error"
@@ -69,10 +81,12 @@ class TradingBot:
 
         # start the time loop
         while True:
-            now_wat = datetime.now(wat)
-            formatted_time = now_wat.strftime("%H:%M:%S")
+            # wat means West Africa Time
+            current_time = datetime.now().strftime("%H:%M:%S")
+            current_time_wat = self.convert_to_lagos_timezone(current_time)
+            news_time_wat = self.convert_to_lagos_timezone(news_time)
 
-            if formatted_time == news_time:
+            if current_time_wat == news_time_wat:
                 print(f"\nSending orders...\nBuy Stop: {request['price']}\nSell Stop: {request1['price']}")
                 result = mt5.order_send(request)
                 self.buy_stop_price = request['price']
