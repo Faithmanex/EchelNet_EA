@@ -140,8 +140,6 @@ class TradingApp(ctk.CTk):
 
     def automatic_run(self):
         self.get_user_data('auto')
-        print("user data done")
-
         # run automatically
         auto_trade_run.run_automatically()
     
@@ -219,7 +217,7 @@ class TradingApp(ctk.CTk):
 
     def start_auto_trading_thread(self):
         # Create a new thread and run self.start_trading in that thread
-        print('here')
+
         trading_thread = threading.Thread(target=self.automatic_run)
         trading_thread.start()
 
