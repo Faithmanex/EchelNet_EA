@@ -1,11 +1,11 @@
 #property link          "https://github.com/Faithmanex/"
 #property version       "1.0"
 #property strict
-#property copyright     "EchelNet - 2024"
+#property copyright     "Copyright 2024, EchelNet Ltd."
 #property description   "This Expert Advisor will start trailing the stop-loss after a given profit is reached."
 #property description   " "
 #property description   "WARNING: No warranty. This EA is offered \"as is\". Use at your own risk.\r\n"
-#property icon          "\\Files\\EF-Icon-64x64px.ico"
+#property icon          "\\Files\\echelneticon.ico"
 
 #include <Trade/Trade.mqh>
 #include <errordescription.mqh>
@@ -36,7 +36,7 @@ input bool SendApp = true;                         // Send notification to mobil
 input bool SendEmail = true;                       // Send notification via email
 input group "Graphical window"
 input bool ShowPanel = true;                       // Show graphical panel
-input string ExpertName = "TSL";                  // Expert name (to name the objects)
+input string ExpertName = "E-TSL";                  // Expert name (to name the objects)
 input int Xoff = 20;                               // Horizontal spacing for the control panel
 input int Yoff = 20;                               // Vertical spacing for the control panel
 
@@ -216,7 +216,7 @@ int PanelRecX = PanelLabX + 4;
 
 void DrawPanel()
 {
-    string PanelText = "Trailing SL";
+    string PanelText = "EchelNet TSL";
     string PanelToolTip = "Trailing Stop on Profit by EchelNet";
     int Rows = 1;
     ObjectCreate(ChartID(), PanelBase, OBJ_RECTANGLE_LABEL, 0, 0, 0);
@@ -261,7 +261,7 @@ void DrawPanel()
     {
         EnableDisabledText = "TRAILING DISABLED";
         EnableDisabledColor = clrWhite;
-        EnableDisabledBack = clrRed;
+        EnableDisabledBack = clrDarkRed;
     }
 
     DrawEdit(PanelEnableDisable,
