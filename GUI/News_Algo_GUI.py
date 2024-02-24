@@ -26,6 +26,7 @@ class TradingApp(ctk.CTk):
         self.title("EchelNet News Algo")
         self.geometry("550x600")
         ctk.set_appearance_mode("dark")
+        self.iconbitmap("appicon.ico")
 
         # create a directory to save all json files
         directory_path = "..\\core\\json_data"
@@ -76,11 +77,11 @@ class TradingApp(ctk.CTk):
         self.lot_entry.grid(row=1, column=1, pady=5, padx=10, sticky="w")
 
         self.stop_loss_entry = ctk.CTkEntry(self, placeholder_text="30", width=60)
-        self.stop_loss_entry.insert(0, "30")
+        self.stop_loss_entry.insert(0, "25")
         self.stop_loss_entry.grid(row=2, column=1, pady=5, padx=10, sticky="w")
 
         self.stop_distance_entry = ctk.CTkEntry(self, placeholder_text="Distance from Price", width=60)
-        self.stop_distance_entry.insert(0, "30")
+        self.stop_distance_entry.insert(0, "25")
         self.stop_distance_entry.grid(row=4, column=1, pady=5, padx=10, sticky="w")
 
         # Timeout Entry
