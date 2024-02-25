@@ -14,9 +14,9 @@ def run_auto_bot():
     os.system(f'python {script_path}')
 
 # Schedule the job to run  at 10:00
-schedule.every().day.at("00:00").do(get_calendar_data)
+schedule.every().day.at("00:10").do(get_calendar_data)
 
-schedule.every().day.at("00:05").do(run_auto_bot)
+schedule.every().day.at("00:15").do(run_auto_bot)
 
 def run_automatically():
     # change the current working directory

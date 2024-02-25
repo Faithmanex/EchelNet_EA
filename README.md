@@ -35,6 +35,9 @@ Follow these steps to set up EchelNet_EA on your system.
 7. **Move Extracted Files**
     Move or copy the extracted files into the cloned repository, specifically into the "core" folder.
 
+8. **Enable algorithmic trading **
+    Enable algorithmic trading on your mt5 terminal. You can use this [link](https://help.markettraders.com/s/article/mt5-enable-ea#:~:text=Step%201%20Open%20your%20MT5%20Platform%20and%20log,imports%22%20to%20put%20a%20check%20mark%20on%20it) for more details
+
 Your setup is now complete! You can proceed with using EchelNet_EA as needed.
 
 For more information and usage details, refer to the project documentation.
