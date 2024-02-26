@@ -25,6 +25,7 @@ class TradingApp(ctk.CTk):
         # pass in the Tkinter instance as self
         self.tradingBot = TradingBot()
 
+        # Title and geometry
         self.title("EchelNet News Algo")
         self.geometry("550x600")
         ctk.set_appearance_mode("dark")
@@ -88,7 +89,7 @@ class TradingApp(ctk.CTk):
         self.martingale_checkbox_label = ctk.CTkLabel(self, text="Martingale", anchor="w", justify="left")
         self.martingale_checkbox_label.grid(row=8, column=1, pady=5, padx=10, sticky="w")
 
-        self.martingale_var = tk.IntVar(value=0)  # Create a variable to track checkbox state
+        self.martingale_var = tk.IntVar(value=1)  # Set the default value to True
         self.martingale_checkbox = ctk.CTkCheckBox(self, text="", variable=self.martingale_var)
         self.martingale_checkbox.grid(row=8, column=0, pady=5, padx=10, sticky="w")
 
@@ -176,29 +177,24 @@ class TradingApp(ctk.CTk):
             print("Auto Lots Deactivated")
             # lot = float(self.lot_entry.get())
             lot = fixed_lot
-        if martingale:
-            print("Martingale Activated")
-            # the Martingale function should be run
-        else:
-            print("Martingale Deactivated")
 
         data = {
             "lot": lot,
             "stop_loss": stop_loss,
             "stop_distance": stop_distance,
-            "timeout": timeout
+            "timeout": timeout,
+            "martingale": martingale  # Include martingale in the data
         }
 
         if mode == "auto":
             with open("../core/json_data/user_data.json", 'w') as file:
                 json.dump(data, file, indent=4)
         elif mode == "start":
-            return lot, stop_loss, stop_distance, timeout
+            return lot, stop_loss, stop_distance, timeout, martingale
 
     def start_trading(self):
-        
-        # Get the data
-        self.lot, stop_loss, stop_distance, timeout = self.get_user_data("start")
+        # Get the data including martingale
+        self.lot, stop_loss, stop_distance, timeout, martingale = self.get_user_data("start")
 
         self.symbol = self.symbol_menu.get() 
         news_time_hour = self.news_time_hour.get() 
@@ -212,18 +208,18 @@ class TradingApp(ctk.CTk):
         # handle the responses from the trading bot
         self.handle_response(response, price, deviation, result, result1)
 
-
-        #handle timeout
+        # handle timeout
         if response == "order sent":
-            # This is to add extra positon to the buy or sell stop when either of them is triggered
-            # Used to cover losses and recover all
             BUY_MAGIC = 123456
             SELL_MAGIC = 654321
-            self.tradingBot.check_triggered_orders(self.symbol, BUY_MAGIC, SELL_MAGIC, deviation)
-                
+            if martingale:
+                print("Martingale Activated")
+                self.tradingBot.check_triggered_orders(self.symbol, BUY_MAGIC, SELL_MAGIC, deviation)
+            else:
+                print("Martingale Deactivated")
+
             time.sleep(timeout)
             self.tradingBot.cancel_all_pending_orders(self.symbol)
-
 
 
     def handle_response(self, errorCode,price, deviation, result, result1):
