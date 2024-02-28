@@ -107,6 +107,7 @@ class TradingBot:
                     response = "order sent"
                     return response, self.ask_price, deviation, result, result1
 
+
     def check_triggered_orders(self, symbol, BUY_MAGIC, SELL_MAGIC, deviation):
         # Check if there are any positions with the magic_numbers of buy stop or sell stop
         result_buy_stop = ''
@@ -160,8 +161,6 @@ class TradingBot:
                     loop_variable = False
                     break
             
-
-
 
     def cancel_all_pending_orders(self, symbol):
         orders = mt5.orders_get(symbol=symbol)
