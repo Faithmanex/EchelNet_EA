@@ -172,9 +172,6 @@ class TradingBot:
                 print("Pending order deleted")
 
 
-    def calculate_lot(self, risk, sl):
-        
-
 
 # new = AutoBot()
 # new.auto_trade()
