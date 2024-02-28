@@ -54,7 +54,7 @@ class TradingApp(ctk.CTk):
         self.symbol_label = ctk.CTkLabel(self, text="Symbol:", anchor="w", justify="left")
         self.symbol_label.grid(row=0, column=0, pady=5, padx=10, sticky="w")
 
-        self.lot_label = ctk.CTkLabel(self, text="Lot:", anchor="w", justify="left")
+        self.lot_label = ctk.CTkLabel(self, text="Lot/risk(%):", anchor="w", justify="left")
         self.lot_label.grid(row=1, column=0, pady=5, padx=10, sticky="w")
 
         self.stop_loss_label = ctk.CTkLabel(self, text="Stop Loss:", anchor="w", justify="left")
