@@ -14,6 +14,7 @@ from tkinter import Checkbutton
 sys.path.append("..")
 from core import auto_trade_run
 from core.News_Algo import TradingBot
+from core.lot_calc import get_lot_size
 
 
 mt5.initialize()
@@ -29,7 +30,7 @@ class TradingApp(ctk.CTk):
         self.title("EchelNet News Algo")
         self.geometry("550x600")
         ctk.set_appearance_mode("dark")
-        self.iconbitmap("appicon.ico")
+        self.iconbitmap("images/appicon.ico")
 
         # create a directory to save all json files
         directory_path = "..\\core\\json_data"
@@ -142,7 +143,8 @@ class TradingApp(ctk.CTk):
             height = min(len(lines), 50) # Limit the maximum height to 50 lines
             event.widget.config(height=height)
 
-
+    def show_message(self, message):
+        messagebox.showwarning(message)
 
     # Funtions 
     def update_time(self):
@@ -169,10 +171,8 @@ class TradingApp(ctk.CTk):
         # Use auto_lots and martingale to potentially modify behavior 
         if auto_lots:
             print("Auto Lots Activated")
+            lot = get_lot_size(fixed_lot, stop_loss, "USD", self.symbol)
             
-            # Auto Lot size logic here
-            # Then lot = auto_lot
-            lot = fixed_lot
         else:
             print("Auto Lots Deactivated")
             # lot = float(self.lot_entry.get())
@@ -192,34 +192,36 @@ class TradingApp(ctk.CTk):
         elif mode == "start":
             return lot, stop_loss, stop_distance, timeout, martingale
 
-    def start_trading(self):
-        # Get the data including martingale
-        self.lot, stop_loss, stop_distance, timeout, martingale = self.get_user_data("start")
 
+    def start_trading(self):
         self.symbol = self.symbol_menu.get() 
         news_time_hour = self.news_time_hour.get() 
         news_time_minute = self.news_time_minute.get()
         news_time_second = self.news_time_second.get()
         news_time = f"{news_time_hour}:{news_time_minute}:{news_time_second}"
 
-        self.output_text_box.insert(tk.END, f"Sending order for symbol: {self.symbol}\nTime: {news_time}\nLot Size: {self.lot}\nStop Loss: {stop_loss} points\nStop Distance: {stop_distance}\nTimeout: {timeout}\n\n")
-        response, price, deviation, result, result1 = self.tradingBot.execute_trades(self.symbol, self.lot, stop_loss, stop_distance, news_time)
+        # Get the data including martingale
+        self.lot, stop_loss, stop_distance, timeout, martingale = self.get_user_data("start")
+
+
+        # self.output_text_box.insert(tk.END, f"Sending order for symbol: {self.symbol}\nTime: {news_time}\nLot Size: {self.lot}\nStop Loss: {stop_loss} points\nStop Distance: {stop_distance}\nTimeout: {timeout}\n\n")
+        # response, price, deviation, result, result1 = self.tradingBot.execute_trades(self.symbol, self.lot, stop_loss, stop_distance, news_time)
 
         # handle the responses from the trading bot
-        self.handle_response(response, price, deviation, result, result1)
+        # self.handle_response(response, price, deviation, result, result1)
 
         # handle timeout
-        if response == "order sent":
-            BUY_MAGIC = 123456
-            SELL_MAGIC = 654321
-            if martingale:
-                print("Martingale Activated")
-                self.tradingBot.check_triggered_orders(self.symbol, BUY_MAGIC, SELL_MAGIC, deviation)
-            else:
-                print("Martingale Deactivated")
+        # if response == "order sent":
+        #     BUY_MAGIC = 123456
+        #     SELL_MAGIC = 654321
+        #     if martingale:
+        #         print("Martingale Activated")
+        #         self.tradingBot.check_triggered_orders(self.symbol, BUY_MAGIC, SELL_MAGIC, deviation)
+        #     else:
+        #         print("Martingale Deactivated")
 
-            time.sleep(timeout)
-            self.tradingBot.cancel_all_pending_orders(self.symbol)
+        #     time.sleep(timeout)
+        #     self.tradingBot.cancel_all_pending_orders(self.symbol)
 
 
     def handle_response(self, errorCode,price, deviation, result, result1):

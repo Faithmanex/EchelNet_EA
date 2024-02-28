@@ -13,6 +13,7 @@ def get_currency_rate(symbol, account_currency, symbol_currency):
 
     # Replace this with your method of obtaining the current exchange rate
     tick = mt5.symbol_info_tick(symbol)
+    
     if tick is not None:
         return tick.bid
     else:
@@ -29,6 +30,7 @@ def calculate_lot_size(account_balance, risk_percentage, stop_loss_points, symbo
 
     if symbol_currency != 'USD':
         exchange_rate = get_currency_rate(symbol_properties.name, account_currency, symbol_currency)
+        # print(exchange_rate)
     else:
         exchange_rate = 1.0  # No conversion needed for USD
 
@@ -37,19 +39,11 @@ def calculate_lot_size(account_balance, risk_percentage, stop_loss_points, symbo
 
     return lot_size
 
-def main():
+def get_lot_size(risk_percentage, stop_loss_points, account_currency, symbol):
     mt5.initialize()
-
-    # Replace 'EURUSD' with the desired symbol
-    symbol = 'EURUSD'
 
     # Replace these values with your actual account balance, risk percentage, and stop loss in points
     account_balance = mt5.account_info().balance  # Example account balance
-    risk_percentage = 10  # Example risk percentage
-    stop_loss_points = 50  # Example stop loss in points
-
-    # Replace 'USD' with your actual account currency
-    account_currency = 'USD'
 
     symbol_properties = get_symbol_properties(symbol)
     if symbol_properties:
@@ -59,5 +53,4 @@ def main():
 
     mt5.shutdown()
 
-if __name__ == "__main__":
-    main()
+
