@@ -159,6 +159,7 @@ class TradingApp(ctk.CTk):
         auto_trade_run.run_automatically()
     
     def get_user_data(self, mode):
+        self.symbol = self.symbol_menu.get() 
         fixed_lot = float(self.lot_entry.get())
         stop_loss = float(self.stop_loss_entry.get())
         stop_distance = float(self.stop_distance_entry.get())
@@ -194,7 +195,6 @@ class TradingApp(ctk.CTk):
 
 
     def start_trading(self):
-        self.symbol = self.symbol_menu.get() 
         news_time_hour = self.news_time_hour.get() 
         news_time_minute = self.news_time_minute.get()
         news_time_second = self.news_time_second.get()
@@ -204,24 +204,24 @@ class TradingApp(ctk.CTk):
         self.lot, stop_loss, stop_distance, timeout, martingale = self.get_user_data("start")
 
 
-        # self.output_text_box.insert(tk.END, f"Sending order for symbol: {self.symbol}\nTime: {news_time}\nLot Size: {self.lot}\nStop Loss: {stop_loss} points\nStop Distance: {stop_distance}\nTimeout: {timeout}\n\n")
-        # response, price, deviation, result, result1 = self.tradingBot.execute_trades(self.symbol, self.lot, stop_loss, stop_distance, news_time)
+        self.output_text_box.insert(tk.END, f"Sending order for symbol: {self.symbol}\nTime: {news_time}\nLot Size: {self.lot}\nStop Loss: {stop_loss} points\nStop Distance: {stop_distance}\nTimeout: {timeout}\n\n")
+        response, price, deviation, result, result1 = self.tradingBot.execute_trades(self.symbol, self.lot, stop_loss, stop_distance, news_time)
 
         # handle the responses from the trading bot
-        # self.handle_response(response, price, deviation, result, result1)
+        self.handle_response(response, price, deviation, result, result1)
 
         # handle timeout
-        # if response == "order sent":
-        #     BUY_MAGIC = 123456
-        #     SELL_MAGIC = 654321
-        #     if martingale:
-        #         print("Martingale Activated")
-        #         self.tradingBot.check_triggered_orders(self.symbol, BUY_MAGIC, SELL_MAGIC, deviation)
-        #     else:
-        #         print("Martingale Deactivated")
+        if response == "order sent":
+            BUY_MAGIC = 123456
+            SELL_MAGIC = 654321
+            if martingale:
+                print("Martingale Activated")
+                self.tradingBot.check_triggered_orders(self.symbol, BUY_MAGIC, SELL_MAGIC, deviation)
+            else:
+                print("Martingale Deactivated")
 
-        #     time.sleep(timeout)
-        #     self.tradingBot.cancel_all_pending_orders(self.symbol)
+            time.sleep(timeout)
+            self.tradingBot.cancel_all_pending_orders(self.symbol)
 
 
     def handle_response(self, errorCode,price, deviation, result, result1):

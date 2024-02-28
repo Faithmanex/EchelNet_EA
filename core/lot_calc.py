@@ -49,7 +49,7 @@ def get_lot_size(risk_percentage, stop_loss_points, account_currency, symbol):
     if symbol_properties:
         lot_size = calculate_lot_size(account_balance, risk_percentage, stop_loss_points, symbol_properties, account_currency)
         if lot_size is not None:
-            print(f"Lot size for {symbol}: {lot_size:.2f} lots")
+            return round(lot_size, 2)
 
     mt5.shutdown()
 
